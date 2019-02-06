@@ -1,22 +1,29 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
+library(tidyverse)
+library(shinythemes)
+library(jpeg)
+
+josh_edelson <- "Josh_Edelson_AFT_Getty.jpg"
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
+  theme = shinytheme("sandstone"),
+
    
    # Application title
-   titlePanel("Old Faithful Geyser Data"),
+   titlePanel("Playing with Fire... Data"),
+    
+    navbarPage("Summary",
+               
+               tabPanel("This app visually displays..."),
+               
+               sidebarPanel(
+                 imageOutput("josh_edelson")
+               ),
    
    # Sidebar with a slider input for number of bins 
-   sidebarLayout(
+   sidebarLayout(position = "left",
+                 mainPanel = 
       sidebarPanel(
          sliderInput("bins",
                      "Number of bins:",
@@ -34,6 +41,9 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  output$josh_edelson <- renderImage({
+    outfil <- tempfile(fileext = '.jpg')
+  })
    
    output$distPlot <- renderPlot({
       # generate bins based on input$bins from ui.R
