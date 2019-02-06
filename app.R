@@ -81,7 +81,7 @@ server <- function(input, output, session) {
     leaflet(top100) %>% 
       addProviderTiles("Esri.WorldTopoMap") %>% 
       addPolygons(
-        popup = paste("<h3 style = 'color: red'> Fire Description </h3>", "<b>Fire name:</b>", fire_year$FIRE_NAME, "<br", "<b>Year:</b>", fire_year$YEAR_,"<br>", "<b>Size:</b>", fire_year$Shape_Area, "Sq.Meters", "<br>", "<b>Cause code</b>", fire_year$CAUSE, sep = " ") 
+        popup = paste("<h3 style = 'color: red'> Fire Description </h3>", "<b>Fire name:</b>", top100$FIRE_NAME, "<br", "<b>Year:</b>", top100$YEAR_,"<br>", "<b>Size:</b>", top100$Shape_Area, "Sq.Meters", "<br>", "<b>Cause code</b>", top100$CAUSE, sep = " ") 
       )
    
   })
