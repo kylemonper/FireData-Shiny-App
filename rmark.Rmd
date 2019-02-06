@@ -23,36 +23,26 @@ fire <- st_read("Fire_Output.shp")
 
 ```
 
-```{r}
-
-vector_filepath = system.file("firePoints.gpkg", package = "spData")
-fire_points = st_read(vector_filepath)
-```
-
-
-
-
-```{r}
-
-
-fire_year <- fire %>% 
-  select(YEAR_, FIRE_NAME, Shape_Area) %>% 
-  filter(YEAR_ ==  "2000" | YEAR_ == "2001" | YEAR_ == "2002" | YEAR_ == "2003")
-  
-
-
-fire_year <- st_transform(fire_year, crs = 4326)
-
-```
-
 
 ```{r}
 
 top100 <- fire %>% 
-  select(YEAR_, FIRE_NAME,Shape_Area, CAUSE) %>% 
-  arrange(-Shape_Area)
+  select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
+  arrange(-GIS_ACRES)
 
-top100 <- top100[1:100,]
+top100 <- top100[1:100,] %>% 
+  mutate(CAUSE = case_when(
+    CAUSE == 1 ~ "Lightning",
+    CAUSE == 2 ~ "Equipment Use",
+    CAUSE == 4 ~ "Campfire",
+    CAUSE == 5 ~ "Debris",
+    CAUSE == 6 ~ "Railroad",
+    CAUSE == 7 ~ "Arson",
+    CAUSE == 9 ~ "Miscellaneous",
+    CAUSE == 10 ~ "Vehicle",
+    CAUSE == 11 ~ "Power Line",
+    CAUSE == 14 ~ "Unknown/Unidentified"
+  ))
 ```
 
 
