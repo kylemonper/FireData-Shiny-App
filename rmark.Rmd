@@ -1,0 +1,78 @@
+---
+title: "Shiny_fire"
+author: "Kyle Monper"
+date: "January 24, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message = F}
+library(tidyverse)
+library(sf)
+library(leaflet)
+library(shiny)
+library(plotly)
+library(spData)
+
+
+fire <- st_read("Fire_Output.shp")
+rx_fire <- st_read(".", layer = "nonfire_rx_Output")
+rx_nonfire <- st_read(".", layer = "nonfire_rx_Output")
+county_pop <- read_csv("ca_county_pop.csv")
+
+```
+
+```{r}
+
+vector_filepath = system.file("firePoints.gpkg", package = "spData")
+fire_points = st_read(vector_filepath)
+```
+
+
+
+
+```{r}
+
+
+fire_year <- fire %>% 
+  select(YEAR_, FIRE_NAME, Shape_Area) %>% 
+  filter(YEAR_ ==  "2000" | YEAR_ == "2001" | YEAR_ == "2002" | YEAR_ == "2003")
+  
+
+
+fire_year <- st_transform(fire_year, crs = 4326)
+
+```
+
+
+```{r}
+
+top100 <- fire %>% 
+  select(YEAR_, FIRE_NAME,Shape_Area, CAUSE) %>% 
+  arrange(-Shape_Area)
+
+top100 <- top100[1:100,]
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
