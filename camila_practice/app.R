@@ -3,7 +3,7 @@ library(tidyverse)
 library(shinythemes)
 library(jpeg)
 
-josh_edelson <- "Josh_Edelson_AFT_Getty.jpg"
+josh_edelson <- "Josh_Edelson_AFT_Getty.png"
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -19,41 +19,28 @@ ui <- fluidPage(
                
                sidebarPanel(
                  imageOutput("josh_edelson")
-               ),
-   
-   # Sidebar with a slider input for number of bins 
-   sidebarLayout(position = "left",
-                 mainPanel = 
-      sidebarPanel(
-         sliderInput("bins",
-                     "Number of bins:",
-                     min = 1,
-                     max = 50,
-                     value = 30)
-      ),
-      
-      # Show a plot of the generated distribution
-      mainPanel(
-         plotOutput("distPlot")
-      )
-   )
+               )
+    )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   output$josh_edelson <- renderImage({
-    outfil <- tempfile(fileext = '.jpg')
-  })
-   
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      x    <- faithful[, 2] 
-      bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      
-      # draw the histogram with the specified number of bins
-      hist(x, breaks = bins, col = 'darkgray', border = 'white')
-   })
-}
+    outfil <- tempfile(fileext = '.png')
+    
+    png(outfile, width = 400, height = 300)
+    hist(rnorm(input$obs), main = "Generated in renderImage()")
+    dev.off()
+    
+    list(src = outfile,
+         contentType = 'image/png',
+         width = 400,
+         height = 300,
+         alt = "This is alternate text")
+  }, deleteFile = TRUE)
+  
+  }
+
 
 # Run the application 
 shinyApp(ui = ui, server = server)
