@@ -44,6 +44,7 @@ server <- function(input, output) {
       filter(CAUSE == input$cause) %>% 
       group_by(YEAR_) %>% 
       summarize(acres_burn_tot = sum(Shape_Area))#shape_area place holder for acres_burned, need to update when possible
+    as.data.frame(reactive_cause)
   })
     #Make plot based on cause
    output$causePlot <- renderPlot({

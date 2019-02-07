@@ -30,6 +30,8 @@ top100 <- fire %>%
   select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
   arrange(-GIS_ACRES)
 
+top100$YEAR_ <- unfactor(top100$YEAR_)
+
 top100 <- top100[1:100,] %>% 
   mutate(CAUSE = case_when(
     CAUSE == 1 ~ "Lightning",
@@ -42,7 +44,8 @@ top100 <- top100[1:100,] %>%
     CAUSE == 10 ~ "Vehicle",
     CAUSE == 11 ~ "Power Line",
     CAUSE == 14 ~ "Unknown/Unidentified"
-  ))
+  )) %>% 
+  arrange(YEAR_)
 ```
 
 
