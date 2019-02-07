@@ -43,16 +43,22 @@ server <- function(input, output) {
     top100 %>%
       filter(CAUSE == input$cause) %>% 
       group_by(YEAR_) %>% 
+<<<<<<< HEAD
       summarize(acres_burn_tot = sum(Shape_Area))#shape_area place holder for acres_burned, need to update when possible
     as.data.frame(reactive_cause)
+=======
+      summarize(acres_burn_tot = sum(GIS_ACRES))#shape_area place holder for acres_burned, need to update when possible
+>>>>>>> 178642baef3100d4ae8f93855be5073addbaa246
   })
     #Make plot based on cause
    output$causePlot <- renderPlot({
       
       # draw the plot with the specified cause
-      ggplot(reactive_cause, aes(x = Year_, y = acres_burn_tot))+
-       geom_line()+
-       theme_classic()
+      ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot))+
+       geom_col()+
+       theme_classic()+
+       scale_x_discrete(expand = c(0,0))+
+       scale_y_continuous(expand = c(0,0))
    })
 }
 

@@ -48,6 +48,13 @@ top100 <- top100[1:100,] %>%
   arrange(YEAR_)
 ```
 
+```{r}
+#Testing to see if wrangling done in Shiny actually does what its supposed to
+reactive_cause_test<- top100 %>%
+      filter(CAUSE == "Miscellaneous") %>% 
+      group_by(YEAR_) %>% 
+      summarize(acres_burn_tot = sum(GIS_ACRES))
+```
 
 
 
