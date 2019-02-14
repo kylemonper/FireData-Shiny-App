@@ -46,7 +46,18 @@ top100 <- top100[1:100,] %>%
     CAUSE == 14 ~ "Unknown/Unidentified"
   )) %>% 
   arrange(YEAR_)
+
+simple <- st_simplify(top100)
 ```
+
+try this for simplifying the polygons
+```{r}
+simplepolys <- rmapshaper::ms_simplify(top100) %>%
+  st_as_sf()
+top100 <- simplepolys
+```
+
+
 
 ```{r}
 #Testing to see if wrangling done in Shiny actually does what its supposed to

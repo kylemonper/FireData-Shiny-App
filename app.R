@@ -5,14 +5,19 @@ library(sf)
 library(leaflet)
 library(varhandle)
 library(DT)
+library(spData)
+##might be a cool thing to do with our graphs:
+#app = system.file('examples', 'DT-rows', package = 'DT')
+#runApp(app)
+
+
 
 #####to do list:
 
 #make data table reactive
 #read in pdf & add data to working df
-#reorganize layout (put table on the botton - make table default to only showing 10 at first, etc)
-#would love to make the data table work with shinytheme("superhero") - see about adjusting color of dataTableOutput()
-#reduce resolution of polygons to speed rendering 
+#change layout -- make map full length on side, with datatable under the widget on the side
+
 
 #select top 100 fires 
 top100 <- fire %>% 
@@ -46,9 +51,8 @@ top100 <- st_transform(top100, crs = 4326)
 ui <- fluidPage(
   theme = shinytheme("sandstone"),
   titlePanel("California Fires"),
-
-  sidebarLayout(position = "left",
-    mainPanel(leafletOutput("map")),
+  sidebarLayout(position = "right",
+    mainPanel(leafletOutput("map", height = 700, width = 700)),
     sidebarPanel( 
            
            # Date slider 
@@ -58,10 +62,13 @@ ui <- fluidPage(
                        max = max(top100$YEAR_),
                        value = range(top100$YEAR_),
                        step = 1,
-                       sep = "")
+                       sep = "",
+                       width = 500)
+           
     )
   ),
-  dataTableOutput('dto')
+  tags$hr(),
+  dataTableOutput('dto', width = 800)
 )
 
 
@@ -78,7 +85,14 @@ server <- function(input, output, session) {
       filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
     st_drop_geometry(.)
   })
-  output$dto <- renderDataTable({top100})
+  
+  
+  output$dto <- renderDT({
+    datatable(table(), rownames=F, filter="top", extensions = "Scroller", width = "100%", style="bootstrap",
+              options = list(deferRender = TRUE, scrollY = 300,scrollX=FALSE, scroller = TRUE, dom = 'tp'))
+  })
+  
+
   #this outputs the map
   output$map <- renderLeaflet({
     
@@ -86,7 +100,7 @@ server <- function(input, output, session) {
       #allows user to highlight a polygon based on the selected date range
       pal <- colorFactor(
         palette = "Red",
-        domain = input$date_range
+        domain = input$tableId_row_last_clicked
       )
       
       
@@ -101,7 +115,7 @@ server <- function(input, output, session) {
                       "<b>Year:</b>", top100$YEAR_,"<br>", 
                       "<b>Size:</b>", top100$GIS_ACRES, "Sq.Acres", "<br>", 
                       "<b>Cause</b>", top100$CAUSE,
-                      sep = " ") 
+                      sep = " ")
       )
    
   })
@@ -117,11 +131,11 @@ server <- function(input, output, session) {
                       "<b>Size:</b>", top100$GIS_ACRES, "Sq.Acres", "<br>", 
                       "<b>Cause code</b>", top100$CAUSE, 
                       sep = " ")
+        
       ) 
   })
 
-  
-  output$dto <- renderDataTable({table()})
+
 
 }
 
