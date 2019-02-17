@@ -55,6 +55,9 @@ try this for simplifying the polygons
 simplepolys <- rmapshaper::ms_simplify(top100) %>%
   st_as_sf()
 top100 <- simplepolys
+
+top100 <- top100 %>% 
+  st_simplify(dTolerance = 10000)
 ```
 
 
