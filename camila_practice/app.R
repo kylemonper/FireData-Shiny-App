@@ -19,7 +19,17 @@ ui <- fluidPage(
                  imageOutput("josh_edelson")
                ),
                tabPanel("Map"),
-               tabPanel("Graphs")
+               tabPanel("Graphs",
+                        # Sidebar with a slider input for number of bins 
+                        sidebarLayout(
+                          sidebarPanel(
+                            selectInput(inputId = "acres_burned",
+                                        label = "Acres Burned", 
+                                        choices = sort(unique(top100$CAUSE)))),
+                          mainPanel(
+                            plotOutput("acresPlot")
+                          )
+                        )
     )
 )
 
