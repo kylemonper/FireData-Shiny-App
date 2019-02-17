@@ -16,7 +16,7 @@ library(leaflet)
 library(shiny)
 library(plotly)
 library(spData)
-
+library(varhandle)
 
 fire <- st_read("Fire_Output.shp")
 
@@ -47,7 +47,7 @@ top100 <- top100[1:100,] %>%
   )) %>% 
   arrange(YEAR_)
 
-simple <- st_simplify(top100)
+
 ```
 
 try this for simplifying the polygons
@@ -56,8 +56,8 @@ simplepolys <- rmapshaper::ms_simplify(top100) %>%
   st_as_sf()
 top100 <- simplepolys
 
-top100 <- top100 %>% 
-  st_simplify(dTolerance = 10000)
+#top100 <- top100 %>% 
+#  st_simplify(dTolerance = 10000)
 ```
 
 
