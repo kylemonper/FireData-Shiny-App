@@ -15,11 +15,11 @@ ui <- fluidPage(
     
     navbarPage("Summary",
                
-               tabPanel("This app visually displays..."),
-               
                sidebarPanel(
                  imageOutput("josh_edelson")
-               )
+               ),
+               tabPanel("Map"),
+               tabPanel("Graphs")
     )
 )
 
