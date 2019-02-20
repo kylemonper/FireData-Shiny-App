@@ -52,12 +52,8 @@ top100 <- top100[1:100,] %>%
 
 try this for simplifying the polygons
 ```{r}
-simplepolys <- rmapshaper::ms_simplify(top100) %>%
-  st_as_sf()
-top100 <- simplepolys
-
-#top100 <- top100 %>% 
-#  st_simplify(dTolerance = 10000)
+top100 <- top100 %>% 
+  st_simplify(dTolerance = 5000)
 ```
 
 
@@ -72,6 +68,21 @@ reactive_cause_test<- top100 %>%
 
 
 
+```{r}
+top100 <- st_transform(top100, crs = 4326)
+
+centroid <- st_centroid(top100)
+
+
+centroid_less <- centroid %>% 
+  mutate(lat = unlist(map(centroid$geometry,1)),
+           long = unlist(map(centroid$geometry,2))) %>% 
+  select(GIS_ACRES, lat, long) %>% 
+  st_drop_geometry()
+
+
+top100 <- merge(top100, centroid_less, by = "GIS_ACRES")
+```
 
 
 

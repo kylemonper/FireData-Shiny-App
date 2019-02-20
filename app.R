@@ -40,8 +40,24 @@ top100 <- top100[1:100,] %>%
     CAUSE == 10 ~ "Vehicle",
     CAUSE == 11 ~ "Power Line",
     CAUSE == 14 ~ "Unknown/Unidentified"
-  )) %>% 
+  )) 
+
+#simplify polygons
+top100 <- top100 %>% 
+  st_simplify(dTolerance = 100)
+
+#add centriods to df to be used in marker creation
+centroid <- st_centroid(top100)
+centroid_less <- centroid %>% 
+  mutate(lat = unlist(map(centroid$geometry,1)),
+         long = unlist(map(centroid$geometry,2))) %>% 
+  select(GIS_ACRES, lat, long) %>% 
+  st_drop_geometry()
+top100 <- merge(top100, centroid_less, by = "GIS_ACRES") %>% 
   arrange(YEAR_)
+
+
+
 
 #change projection to be compatible with leaflet
 top100 <- st_transform(top100, crs = 4326)
@@ -86,26 +102,16 @@ server <- function(input, output, session) {
     st_drop_geometry(.)
   })
   
-  
+  # Data table
   output$dto <- renderDT({
-    datatable(table(), rownames=F, filter="top", extensions = "Scroller", width = "100%", style="bootstrap",
-              options = list(deferRender = TRUE, scrollY = 300,scrollX=FALSE, scroller = TRUE, dom = 'tp'))
+    datatable(table(), rownames=F, filter="top", extensions = "Scroller", width = "100%", style="bootstrap", selection = "single",
+              options = list(deferRender = TRUE, scrollY = 300,scrollX=FALSE, scroller = TRUE, dom = 'tp', stateSave = TRUE))
   })
   
 
+
   #this outputs the map
   output$map <- renderLeaflet({
-    
-    
-      #allows user to highlight a polygon based on the selected date range
-      pal <- colorFactor(
-        palette = "Red",
-        domain = input$tableId_row_last_clicked
-      )
-      
-      
- 
-      
     #static background map
     leaflet(top100) %>% 
       addProviderTiles("Esri.WorldTopoMap") %>% 
@@ -117,7 +123,6 @@ server <- function(input, output, session) {
                       "<b>Cause</b>", top100$CAUSE,
                       sep = " ")
       )
-   
   })
   
   # reactive polgon map
@@ -134,6 +139,7 @@ server <- function(input, output, session) {
         
       ) 
   })
+
 
 
 
