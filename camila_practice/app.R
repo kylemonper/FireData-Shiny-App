@@ -15,43 +15,37 @@ ui <- fluidPage(
     
     navbarPage("Summary",
                
-               sidebarPanel(
-                 imageOutput("josh_edelson")
+               sidebarPanel(title=div(img(src="image1.png"), "My Title")
+               ),
+                 mainPanel(
                ),
                tabPanel("Map"),
-               tabPanel("Graphs",
+               tabPanel("Graphs")
                         # Sidebar with a slider input for number of bins 
-                        sidebarLayout(
-                          sidebarPanel(
-                            selectInput(inputId = "acres_burned",
-                                        label = "Acres Burned", 
-                                        choices = sort(unique(top100$CAUSE)))),
-                          mainPanel(
-                            plotOutput("acresPlot")
+                       # sidebarLayout(
+                        #  sidebarPanel(
+                          #  selectInput(inputId = "acres_burned",
+                                      #  label = "Acres Burned", 
+                                      #  choices = sort(unique(top100$CAUSE)))),
+                        #  mainPanel(
+                        #    plotOutput("acresPlot")
                           )
-                        )
-    )
 )
 
+
 # Define server logic required to draw a histogram
-server <- function(input, output) {
-  output$josh_edelson <- renderImage({
-    outfil <- tempfile(fileext = '.png')
+server <- function(input, output, session) { # Added session to see if it would help render the image
+  output$Image <- renderImage({
+    filename <- normalizePath(file.path('./www', 
+                              paste('image', input$n, '.png', sep='')))
     
-    png(outfile, width = 400, height = 300)
-    hist(rnorm(input$obs), main = "Generated in renderImage()")
-    dev.off()
+    list(src = filename)
     
-    list(src = outfile,
-         contentType = 'image/png',
-         width = 400,
-         height = 300,
-         alt = "This is alternate text")
-  }, deleteFile = TRUE)
+  }, deleteFile = FALSE)
   
   }
 
 
 # Run the application 
-shinyApp(ui = ui, server = server)
+shinyApp(ui, server)
 
