@@ -19,6 +19,11 @@ library(spData)
 #change layout -- make map full length on side, with datatable under the widget on the side
 
 
+##############################################################################
+# Wrangling
+##############################################################################
+
+
 #select top 100 fires 
 top100 <- fire %>% 
   select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
@@ -64,11 +69,18 @@ top100 <- st_transform(top100, crs = 4326)
 
 
 
+##############################################################################
+# UI
+##############################################################################
+
+
 ui <- fluidPage(
   theme = shinytheme("sandstone"),
   titlePanel("California Fires"),
   sidebarLayout(position = "right",
-    mainPanel(leafletOutput("map", height = 700, width = 700)),
+    mainPanel(leafletOutput("map", height = 700, width = 900),
+              tags$hr(),
+              dataTableOutput('dto', width = 900)),
     sidebarPanel( 
            
            # Date slider 
@@ -82,11 +94,11 @@ ui <- fluidPage(
                        width = 500)
            
     )
-  ),
-  tags$hr(),
-  dataTableOutput('dto', width = 800)
+  )
 )
-
+##############################################################################
+# Server Side
+##############################################################################
 
 server <- function(input, output, session) {
 
@@ -104,8 +116,8 @@ server <- function(input, output, session) {
   
   # Data table
   output$dto <- renderDT({
-    datatable(table(), rownames=F, filter="top", extensions = "Scroller", width = "100%", style="bootstrap", selection = "single",
-              options = list(deferRender = TRUE, scrollY = 300,scrollX=FALSE, scroller = TRUE, dom = 'tp', stateSave = TRUE))
+    datatable(table(), rownames=F, extensions = "Scroller", width = "100%", style="bootstrap", selection = "single",
+              options = list(deferRender = TRUE, scrollY = 300,scrollX=FALSE, scroller = TRUE, stateSave = TRUE))
   })
   
 
@@ -131,18 +143,14 @@ server <- function(input, output, session) {
       clearShapes() %>%
       addPolygons(
         popup = paste("<h5 style = 'color: red'> Fire Description </h5>", 
-                      "<b>Fire name:</b>", top100$FIRE_NAME, "<br", 
-                      "<b> Year: </b>", top100$YEAR_,"<br>", 
-                      "<b>Size:</b>", top100$GIS_ACRES, "Sq.Acres", "<br>", 
-                      "<b>Cause code</b>", top100$CAUSE, 
+                      "<b>Fire name:</b>", reactive_date()$FIRE_NAME, "<br", 
+                      "<b> Year: </b>", reactive_date()$YEAR_,"<br>", 
+                      "<b>Size:</b>", reactive_date()$GIS_ACRES, "Sq.Acres", "<br>", 
+                      "<b>Cause code</b>", reactive_date()$CAUSE, 
                       sep = " ")
         
       ) 
   })
-
-
-
-
 }
 
 # Run the application 
