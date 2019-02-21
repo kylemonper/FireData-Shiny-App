@@ -25,40 +25,44 @@ ui <- fluidPage(
       sidebarPanel(
          selectInput(inputId = "cause",
                      label = "Cause of Fire", 
-                     choices = sort(unique(top100$CAUSE)))),
-      mainPanel(
-        plotOutput("causePlot")
-      )
-      )
+                     choices = c(sort(unique(top100$CAUSE)),'All'))),
+      mainPanel(plotOutput("causePlot"))
+      
       
       # Show a plot of the generated distribution
    
-   )
+   ))
 
 
 # Define server logic required to draw cause plot 
-server <- function(input, output) {
+server <- function(input, output, session) {
   #wrangle to make reactive data frame for plot with sum of acres burned/year
   reactive_cause<- reactive({
-    top100 %>%
+   if(input$cause == 'All') 
+   {top100 %>% 
+       group_by(YEAR_) %>%
+       summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
+       mutate(acres_burn_tot_1000 = acres_burn_tot/1000) 
+   }
+    
+     else {top100 %>%
       filter(CAUSE == input$cause) %>% 
-      group_by(YEAR_) %>% 
-<<<<<<< HEAD
-      summarize(acres_burn_tot = sum(Shape_Area))#shape_area place holder for acres_burned, need to update when possible
-    as.data.frame(reactive_cause)
-=======
-      summarize(acres_burn_tot = sum(GIS_ACRES))#shape_area place holder for acres_burned, need to update when possible
->>>>>>> 178642baef3100d4ae8f93855be5073addbaa246
-  })
+      group_by(YEAR_) %>%
+      summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
+      mutate(acres_burn_tot_1000 = acres_burn_tot/1000)
+  }})
+  
+  
     #Make plot based on cause
    output$causePlot <- renderPlot({
       
       # draw the plot with the specified cause
-      ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot))+
-       geom_col()+
+      ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000))+
+       geom_col(fill = "firebrick1", colour = "firebrick4")+
        theme_classic()+
-       scale_x_discrete(expand = c(0,0))+
-       scale_y_continuous(expand = c(0,0))
+       scale_x_continuous(expand = c(0,0), limit = c(1877,2017))+
+       scale_y_continuous(expand = c(0,0), limit = c(0, 510))+
+       labs(y = "Fire Size (Thousands of Acres)", x = "Year")
    })
 }
 
