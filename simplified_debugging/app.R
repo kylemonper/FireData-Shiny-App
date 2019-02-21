@@ -49,7 +49,6 @@ top100 <- merge(top100, centroid_less, by = "GIS_ACRES") %>%
 
 
 
-
 #change projection to be compatible with leaflet
 top100 <- st_transform(top100, crs = 4326)
 
@@ -85,7 +84,8 @@ server <- function(input, output, session) {
   
   reactive_date <- reactive({
     top100 %>%
-      filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2])
+      filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
+      arrange(FIRE_NAME)
   })
   
   table <- reactive({
@@ -103,14 +103,29 @@ server <- function(input, output, session) {
     #static background map
     leaflet(top100) %>% 
       addProviderTiles("Esri.WorldTopoMap") %>% 
-      addPolygons()
+      addPolygons(
+        popup = paste("<h5 style = 'color: red'> Fire Description </h5>", 
+                      "<b>Fire name:</b>", top100$FIRE_NAME, "<br", 
+                      "<b>Year: </b>", top100$YEAR_,"<br>", 
+                      "<b>Size:</b>", top100$GIS_ACRES, "Sq.Acres", "<br>", 
+                      "<b>Cause</b>", top100$CAUSE,
+                      sep = " ")
+      )
   })
 
-  #reactive map to date selection
   observe({
+   
     leafletProxy("map", data = reactive_date()) %>%
       clearShapes() %>%
-      addPolygons()
+      addPolygons(
+        popup = paste("<h5 style = 'color: red'> Fire Description </h5>", 
+                      "<b>Fire name:</b>", top100$FIRE_NAME, "<br", 
+                      "<b> Year: </b>", top100$YEAR_,"<br>", 
+                      "<b>Size:</b>", top100$GIS_ACRES, "Sq.Acres", "<br>", 
+                      "<b>Cause code</b>", top100$CAUSE, 
+                      sep = " ")
+        
+      ) 
   })
  
   
@@ -122,7 +137,8 @@ server <- function(input, output, session) {
     proxy <- leafletProxy('map01')
     print(row_selected)
     proxy %>%
-      addAwesomeMarkers(data = subset(table(), table()$FIRE_NAME==input$dto_rows_selected),
+      addAwesomeMarkers(lat = row_selected$lat,
+                        lng = row_selected$long,
                         icon = my_icon)
 })
   
