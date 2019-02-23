@@ -17,8 +17,6 @@ ui <- fluidPage(
                
                sidebarPanel(title=div(img(src="image1.png"), "My Title")
                ),
-                 mainPanel(
-               ),
                tabPanel("Map"),
                tabPanel("Graphs")
                         # Sidebar with a slider input for number of bins 
