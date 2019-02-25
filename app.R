@@ -1,11 +1,11 @@
 library(shiny)
-library(shinythemes)
 library(tidyverse)
 library(sf)
 library(leaflet)
 library(varhandle)
 library(DT)
-library(spData)
+library(shinydashboard)
+library(fontawesome)
 ##might be a cool thing to do with our graphs:
 #app = system.file('examples', 'DT-rows', package = 'DT')
 #runApp(app)
@@ -72,47 +72,87 @@ top100 <- st_transform(top100, crs = 4326)
 ##############################################################################
 # UI
 ##############################################################################
+header <- dashboardHeader(title = "Cal Fires")
 
-
-ui <- fluidPage(
-  theme = shinytheme("sandstone"),
-  titlePanel("California Fires"),
-  sidebarLayout(position = "right",
-    mainPanel(leafletOutput("map", height = 700, width = 900),
-              tags$hr(),
-              dataTableOutput('dto', width = 900)),
-    sidebarPanel( 
-           
-           # Date slider 
-           sliderInput("date_range", 
-                       label = "Select Date", 
-                       min = min(top100$YEAR_), 
-                       max = max(top100$YEAR_),
-                       value = range(top100$YEAR_),
-                       step = 1,
-                       sep = "",
-                       width = 500)
-           
-    )
+sidebar <- dashboardSidebar(
+  sliderInput("date_range", 
+              label = "Select Date", 
+              min = min(top100$YEAR_), 
+              max = max(top100$YEAR_),
+              value = range(top100$YEAR_),
+              step = 1,
+              sep = "",
+              width = 400),
+  sidebarMenu(
+    menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
+    menuItem("About", tabName = "dashboard", icon = icon("fab fa-info-circle",lib='font-awesome')),
+    menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
+             href = "https://github.com/kylemonper/FireData-Shiny-App")
   )
 )
+
+
+frow1 <- fluidRow(
+  valueBoxOutput("count")
+  ,valueBoxOutput("acres")
+  ,valueBoxOutput("value3")
+)
+
+stuff <- column(width = 12,
+                box(background = "black",
+                    leafletOutput("map", height = 700, width = 900)),
+                box(
+                  dataTableOutput('dto', width = 900))
+)
+
+
+
+
+
+
+body <- dashboardBody(frow1, stuff)
+
+ui <- dashboardPage(header, sidebar, body)
+
+
+
+
+
+
+
 ##############################################################################
 # Server Side
 ##############################################################################
 
 server <- function(input, output, session) {
-
+  
+  
+  
   #create new reactive df based on slider date inpute in the ui
   reactive_date <- reactive({
     top100 %>%
       filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2])
   })
- 
+  
   table <- reactive({
     top100 %>%
       filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
-    st_drop_geometry(.)
+      st_drop_geometry(.)
   })
+  
+  
+  #valuebox 1
+  output$count <- renderValueBox(
+    valueBox(
+      paste0(nrow(reactive_date())), "Total Count", color = "red"
+    )
+  )
+  
+  output$acres <- renderValueBox(
+    valueBox(
+      paste0(sum(reactive_date()$GIS_ACRES)), "Total Area Burned", color = "red", icon = icon("fas fa-fire",lib='font-awesome')
+    )
+  )
   
   # Data table
   output$dto <- renderDT({

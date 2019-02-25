@@ -6,6 +6,7 @@ library(leaflet)
 library(varhandle)
 library(DT)
 library(spData)
+library(shinydashboard)
 ##might be a cool thing to do with our graphs:
 #app = system.file('examples', 'DT-rows', package = 'DT')
 #runApp(app)
@@ -44,21 +45,23 @@ centroid_less <- centroid %>%
          long = unlist(map(centroid$geometry,2))) %>% 
   select(GIS_ACRES, lat, long) %>% 
   st_drop_geometry()
+
+# add lat long caloumns to top100 by GIS_ACRES which is only unique identifier
 top100 <- merge(top100, centroid_less, by = "GIS_ACRES") %>% 
   arrange(YEAR_)
 
 
 
-#change projection to be compatible with leaflet
-top100 <- st_transform(top100, crs = 4326)
-
-
+##############################################################################
+# UI
+##############################################################################
 
 ui <- fluidPage(
   sidebarLayout(position = "right",
                 mainPanel(leafletOutput("map", height = 700, width = 700),
                           tags$hr(),
-                          dataTableOutput('dto', width = 800)),
+                          dataTableOutput('dto', width = 800),
+                           img(src = "rstudio.png", height = 140, width = 400)),
                 sidebarPanel( 
                   
                   # Date slider 
@@ -69,8 +72,10 @@ ui <- fluidPage(
                               value = range(top100$YEAR_),
                               step = 1,
                               sep = "",
-                              width = 500)
+                              width = 500),
+                  tags$img(src='bren.png')
                 )
+                
   )
   
 )
@@ -103,29 +108,16 @@ server <- function(input, output, session) {
     #static background map
     leaflet(top100) %>% 
       addProviderTiles("Esri.WorldTopoMap") %>% 
-      addPolygons(
-        popup = paste("<h5 style = 'color: red'> Fire Description </h5>", 
-                      "<b>Fire name:</b>", top100$FIRE_NAME, "<br", 
-                      "<b>Year: </b>", top100$YEAR_,"<br>", 
-                      "<b>Size:</b>", top100$GIS_ACRES, "Sq.Acres", "<br>", 
-                      "<b>Cause</b>", top100$CAUSE,
-                      sep = " ")
-      )
+      addPolygons()
   })
 
   observe({
    
     leafletProxy("map", data = reactive_date()) %>%
       clearShapes() %>%
-      addPolygons(
-        popup = paste("<h5 style = 'color: red'> Fire Description </h5>", 
-                      "<b>Fire name:</b>", top100$FIRE_NAME, "<br", 
-                      "<b> Year: </b>", top100$YEAR_,"<br>", 
-                      "<b>Size:</b>", top100$GIS_ACRES, "Sq.Acres", "<br>", 
-                      "<b>Cause code</b>", top100$CAUSE, 
-                      sep = " ")
+      addPolygons()
         
-      ) 
+       
   })
  
   
@@ -134,9 +126,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$dto_rows_selected, {
     row_selected = table()[input$dto_rows_selected,] 
-    proxy <- leafletProxy('map01')
-    print(row_selected)
-    proxy %>%
+    leafletProxy('map01') %>% 
       addAwesomeMarkers(lat = row_selected$lat,
                         lng = row_selected$long,
                         icon = my_icon)
