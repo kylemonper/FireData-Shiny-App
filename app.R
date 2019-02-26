@@ -6,17 +6,21 @@ library(varhandle)
 library(DT)
 library(shinydashboard)
 library(fontawesome)
-##might be a cool thing to do with our graphs:
-#app = system.file('examples', 'DT-rows', package = 'DT')
-#runApp(app)
 
 
 
-#####to do list:
+#####to do list#####
+# must do:
+    # - finish graphs
+    # - fix layout: table below map, valueOutputs and graphs on side https://rstudio.github.io/shinydashboard/structure.html
+    # - Fill out the 'about sectiion' and make it its own page
 
-#make data table reactive
-#read in pdf & add data to working df
-#change layout -- make map full length on side, with datatable under the widget on the side
+#cool to do
+    # - remove header and replace with image http://jonkatz2.github.io/2018/06/22/Image-In-Shinydashboard-Header
+    # - make data table reactive 
+
+#make data table reactive 
+
 
 
 ##############################################################################
