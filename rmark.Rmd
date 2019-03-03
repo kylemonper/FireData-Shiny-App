@@ -17,6 +17,8 @@ library(shiny)
 library(plotly)
 library(spData)
 library(varhandle)
+library(RColorBrewer)
+library(colorspace)
 
 fire <- st_read("Fire_Output.shp")
 
@@ -84,6 +86,10 @@ centroid_less <- centroid %>%
 top100 <- merge(top100, centroid_less, by = "GIS_ACRES")
 ```
 
+```{r}
+
+
+```
 
 
 

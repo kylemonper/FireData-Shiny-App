@@ -5,7 +5,7 @@ library(leaflet)
 library(varhandle)
 library(DT)
 library(shinydashboard)
-library(fontawesome)
+#library(fontawesome)
 
 
 

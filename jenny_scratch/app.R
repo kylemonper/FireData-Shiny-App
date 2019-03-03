@@ -36,6 +36,7 @@ ui <- fluidPage(
 
 # Define server logic required to draw cause plot 
 server <- function(input, output, session) {
+  
   #wrangle to make reactive data frame for plot with sum of acres burned/year
   reactive_cause<- reactive({
    if(input$cause == 'All') 
@@ -51,6 +52,23 @@ server <- function(input, output, session) {
       summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
       mutate(acres_burn_tot_1000 = acres_burn_tot/1000)
   }})
+  
+  #Make variable to fill graph based on cause 
+  
+  fill_color <- reactive({
+    if(input$cause == 'Arson'){"cyan"}
+    else if (input$cause == 'Lightning') {"coral1"}
+    else if(input$cause == 'Vehicle'){"orange"}
+    else if(input$cause == 'Miscellaneous'){"blue"}
+    else if(input$cause == 'Campfire'){"yellow"}
+    else if(input$cause == 'Unknown/Unidentified'){"purple"}
+    else if(input$cause == 'Equipment Use'){"grey"}
+    else if(input$cause == 'Debris'){"brown"}
+    else if(input$cause == 'Railroad'){"red"}
+    else if(input$cause == 'Power Line'){"black"}
+    else{}
+  })
+  #choose a palette/set a palette of 
   
   
     #Make plot based on cause
