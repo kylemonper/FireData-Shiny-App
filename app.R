@@ -11,13 +11,14 @@ library(shinydashboard)
 #testing github
 #####to do list#####
 # must do:
-    # - finish graphs
-    # - fix layout: table below map, valueOutputs and graphs on side https://rstudio.github.io/shinydashboard/structure.html
-    # - Fill out the 'about sectiion' and make it its own page
+# - finish graphs
+# - fix layout: table below map, valueOutputs and graphs on side https://rstudio.github.io/shinydashboard/structure.html
+# - Fill out the 'about sectiion' and make it its own page
+# - get widgets gathered under 'dashboard' menu item
 
 #cool to do
-    # - remove header and replace with image http://jonkatz2.github.io/2018/06/22/Image-In-Shinydashboard-Header
-    # - make data table reactive 
+# - make data table reactive 
+#set default of causeplot to "All", make it reactive with map
 
 #make data table reactive 
 
@@ -78,8 +79,12 @@ top100 <- st_transform(top100, crs = 4326)
 ##############################################################################
 header <- dashboardHeader(title = "Cal Fires")
 
+
+
+####### Sidebar
 sidebar <- dashboardSidebar(
-  sliderInput("date_range", 
+  ##slider for year selection
+  sliderInput("date_range",               
               label = "Select Date", 
               min = min(top100$YEAR_), 
               max = max(top100$YEAR_),
@@ -87,6 +92,11 @@ sidebar <- dashboardSidebar(
               step = 1,
               sep = "",
               width = 400),
+  #select Causes
+  selectInput(inputId = "cause",        
+              label = "Cause of Fire", 
+              choices = c(sort(unique(top100$CAUSE)),'All')),
+  #side bar tabs: 
   sidebarMenu(
     menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
     menuItem("About", tabName = "dashboard", icon = icon("fab fa-info-circle",lib='font-awesome')),
@@ -96,32 +106,38 @@ sidebar <- dashboardSidebar(
 )
 
 
-frow1 <- fluidRow(
-  valueBoxOutput("count")
-  ,valueBoxOutput("acres")
-  ,valueBoxOutput("value3")
-)
 
-stuff <- column(width = 12,
-                box(background = "black",
-                    leafletOutput("map", height = 700, width = 900)),
-                box(
-                  dataTableOutput('dto', width = 900))
-)
+##### Designing the dashboard Body Layout
+layout <- fluidRow(
+  #first column, with map and table
+  column(width = 8,
+         box(background = "black",
+             width = 12,
+             leafletOutput("map", height = 700, width = 600)),
+         box(width = 12,
+             dataTableOutput('dto', width = 600))),
+  #second column with graphs and info boxes
+  column(4,
+         fluidRow(width = 4,
+                  box(width = 12,
+                      title = "Quick Stats", 
+                      background = "blue",
+                      solidHeader = TRUE,
+                      valueBoxOutput("count", width = 4),
+                      valueBoxOutput("acres", width = 8))),
+         box(width = 14,
+             background = "blue",
+             title = "<b>Fire Causes</b>",
+             plotOutput("causePlot"))
+         
+  ))
+
+body <- dashboardBody(layout)
 
 
 
-
-
-
-body <- dashboardBody(frow1, stuff)
 
 ui <- dashboardPage(header, sidebar, body)
-
-
-
-
-
 
 
 ##############################################################################
@@ -130,7 +146,7 @@ ui <- dashboardPage(header, sidebar, body)
 
 server <- function(input, output, session) {
   
-  
+  ##############Reactive Variables###################
   
   #create new reactive df based on slider date inpute in the ui
   reactive_date <- reactive({
@@ -138,6 +154,7 @@ server <- function(input, output, session) {
       filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2])
   })
   
+  #Do the same ^ for the table, but drop the geometry for the sake of displaying rows
   table <- reactive({
     top100 %>%
       filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
@@ -145,27 +162,77 @@ server <- function(input, output, session) {
   })
   
   
-  #valuebox 1
+  ########################cause plot###########################
+
+  reactive_cause<- reactive({
+    if(input$cause == 'All') 
+    {top100 %>% 
+        group_by(YEAR_) %>%
+        summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
+        mutate(acres_burn_tot_1000 = acres_burn_tot/1000) 
+    }
+    
+    else {top100 %>%
+        filter(CAUSE == input$cause) %>% 
+        group_by(YEAR_) %>%
+        summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
+        mutate(acres_burn_tot_1000 = acres_burn_tot/1000)
+    }})
+  
+  
+  #Make plot based on cause
+  output$causePlot <- renderPlot({
+    
+    # draw the plot with the specified cause
+    ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000))+
+      geom_col(fill = "firebrick1", colour = "firebrick4")+
+      theme_classic()+
+      scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
+      scale_y_continuous(expand = c(0,0), limit = c(0, 510))+
+      labs(y = "Fire Size (Thousands of Acres)", x = "Year")
+  })
+  
+  
+  
+  ############################Value Boxes######################
+  
+  #valuebox 1: count of fires within the selection range
   output$count <- renderValueBox(
     valueBox(
-      paste0(nrow(reactive_date())), "Total Count", color = "red"
+      paste0(nrow(reactive_date())), 
+      "Number of Fires", 
+      color = "red"
     )
   )
   
+  #valuebox 2: summing acres withing selection range
   output$acres <- renderValueBox(
     valueBox(
-      paste0(sum(reactive_date()$GIS_ACRES)), "Total Area Burned", color = "red", icon = icon("fas fa-fire",lib='font-awesome')
+      paste0(round(sum(reactive_date()$GIS_ACRES)/10000),1), 
+      "Total Area Burned (Thousands of Acres)", 
+      color = "red", 
+      icon = icon("fas fa-fire",lib='font-awesome')
     )
   )
+  
+  
+  
+  #######################maps and data table##################
+  
   
   # Data table
   output$dto <- renderDT({
-    datatable(table(), rownames=F, extensions = "Scroller", width = "100%", style="bootstrap", selection = "single",
+    datatable(table(), 
+              rownames=F, 
+              extensions = "Scroller", 
+              width = "100%", 
+              style="bootstrap",
+              selection = "single",
               options = list(deferRender = TRUE, scrollY = 300,scrollX=FALSE, scroller = TRUE, stateSave = TRUE))
   })
   
-
-
+  
+  
   #this outputs the map
   output$map <- renderLeaflet({
     #static background map
@@ -173,7 +240,7 @@ server <- function(input, output, session) {
       addProviderTiles("Esri.WorldTopoMap") %>% 
       addPolygons(
         popup = paste("<h5 style = 'color: red'> Fire Description </h5>", 
-                      "<b>Fire name:</b>", top100$FIRE_NAME, "<br", 
+                      "<b>Fire name:</b>", top100$FIRE_NAME, "<br>", 
                       "<b>Year:</b>", top100$YEAR_,"<br>", 
                       "<b>Size:</b>", top100$GIS_ACRES, "Sq.Acres", "<br>", 
                       "<b>Cause</b>", top100$CAUSE,
@@ -187,7 +254,7 @@ server <- function(input, output, session) {
       clearShapes() %>%
       addPolygons(
         popup = paste("<h5 style = 'color: red'> Fire Description </h5>", 
-                      "<b>Fire name:</b>", reactive_date()$FIRE_NAME, "<br", 
+                      "<b>Fire name:</b>", reactive_date()$FIRE_NAME, "<br>", 
                       "<b> Year: </b>", reactive_date()$YEAR_,"<br>", 
                       "<b>Size:</b>", reactive_date()$GIS_ACRES, "Sq.Acres", "<br>", 
                       "<b>Cause code</b>", reactive_date()$CAUSE, 
