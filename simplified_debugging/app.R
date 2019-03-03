@@ -125,7 +125,7 @@ server <- function(input, output, session) {
   my_icon = makeAwesomeIcon(icon = 'map-marker', markerColor = 'green', iconColor = 'white')
   
   observeEvent(input$dto_rows_selected, {
-    row_selected = table()[input$dto_rows_selected,] 
+    row_selected <- table()[input$dto_rows_selected,] 
     leafletProxy('map01') %>% 
       addAwesomeMarkers(lat = row_selected$lat,
                         lng = row_selected$long,
