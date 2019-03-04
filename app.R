@@ -5,22 +5,23 @@ library(leaflet)
 library(varhandle)
 library(DT)
 library(shinydashboard)
+
 #library(fontawesome)
 
 
 #testing github
 #####to do list#####
 # must do:
-# - finish graphs
-# - fix layout: table below map, valueOutputs and graphs on side https://rstudio.github.io/shinydashboard/structure.html
-# - Fill out the 'about sectiion' and make it its own page
-# - get widgets gathered under 'dashboard' menu item
+# - finish graphs - CAMILA/JENNY WORK ON (Jenny to just brainstorm, Camila to code)
+# - fix layout: table below map, valueOutputs and graphs on side https://rstudio.github.io/shinydashboard/structure.html - DONE? FOR THE MOST PART?
+# - Fill out the 'about sectiion' and make it its own page - CAMILA FINISH
+# - get widgets gathered under 'dashboard' menu item - JENNY
 
 #cool to do
-# - make data table reactive 
-#set default of causeplot to "All", make it reactive with map
+# - make data table reactive - CAMILA with KYLE help?
+#set default of causeplot to "All", make it reactive with map - JENNY with KYLE help?
 
-#make data table reactive 
+
 
 
 
@@ -77,62 +78,108 @@ top100 <- st_transform(top100, crs = 4326)
 ##############################################################################
 # UI
 ##############################################################################
-header <- dashboardHeader(title = "Cal Fires")
+header <- dashboardHeader(title = "Playing With Fire...Data")
 
 
 
 ####### Sidebar
 sidebar <- dashboardSidebar(
   ##slider for year selection
-  sliderInput("date_range",               
-              label = "Select Date", 
-              min = min(top100$YEAR_), 
-              max = max(top100$YEAR_),
-              value = range(top100$YEAR_),
-              step = 1,
-              sep = "",
-              width = 400),
+ # sliderInput("date_range",               
+  #            label = "Select Date", 
+   #           min = min(top100$YEAR_), 
+    #          max = max(top100$YEAR_),
+     #         value = range(top100$YEAR_),
+      #        step = 1,
+       #       sep = "",
+        #      width = 400),
   #select Causes
-  selectInput(inputId = "cause",        
-              label = "Cause of Fire", 
-              choices = c(sort(unique(top100$CAUSE)),'All')),
+#  selectInput(inputId = "cause",        
+ #             label = "Cause of Fire", 
+  #            choices = c(sort(unique(top100$CAUSE)),'All')),
+  
   #side bar tabs: 
   sidebarMenu(
-    menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
-    menuItem("About", tabName = "dashboard", icon = icon("fab fa-info-circle",lib='font-awesome')),
+    menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"),
+            
+               #slider for year selection
+               sliderInput("date_range",               
+                           label = "Select Date", 
+                           min = min(top100$YEAR_), 
+                           max = max(top100$YEAR_),
+                           value = range(top100$YEAR_),
+                           step = 1,
+                           sep = "",
+                           width = 400),
+            
+               #select Cause 
+               selectInput(inputId = "cause",        
+                           label = "Cause of Fire", 
+                           choices = c(sort(unique(top100$CAUSE)),'All'))
+             ),
+    menuItem("About", tabName = "about", icon = icon("fab fa-info-circle",lib='font-awesome'), selected = TRUE),
     menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
-             href = "https://github.com/kylemonper/FireData-Shiny-App")
+             href = "https://github.com/kylemonper/FireData-Shiny-App"),
+    id = "tabs"
   )
 )
 
 
 
 ##### Designing the dashboard Body Layout
-layout <- fluidRow(
-  #first column, with map and table
-  column(width = 8,
-         box(background = "black",
-             width = 12,
-             leafletOutput("map", height = 700, width = 600)),
-         box(width = 12,
-             dataTableOutput('dto', width = 600))),
-  #second column with graphs and info boxes
-  column(4,
-         fluidRow(width = 4,
-                  box(width = 12,
-                      title = "Quick Stats", 
-                      background = "blue",
-                      solidHeader = TRUE,
-                      valueBoxOutput("count", width = 4),
-                      valueBoxOutput("acres", width = 8))),
-         box(width = 14,
-             background = "blue",
-             title = "<b>Fire Causes</b>",
-             plotOutput("causePlot"))
-         
-  ))
 
-body <- dashboardBody(layout)
+body <- dashboardBody(
+  tabItems( 
+    tabItem(tabName = "dashboard",
+            h2(fluidRow(
+              #first column, with map and table
+              column(width = 8,
+                     box(background = "black",
+                         width = 12,
+                         leafletOutput("map", height = 700, width = 600)),
+                     box(width = 12,
+                         dataTableOutput('dto', width = 600))),
+              #second column with graphs and info boxes
+              column(4,
+                     fluidRow(width = 4,
+                              box(width = 12,
+                                  title = "Quick Stats", 
+                                  background = "blue",
+                                  solidHeader = TRUE,
+                                  valueBoxOutput("count", width = 4),
+                                  valueBoxOutput("acres", width = 8))),
+                     box(width = 14,
+                         background = "blue",
+                         title = "<b>Fire Causes</b>",
+                         plotOutput("causePlot")))))),
+   tabItem(tabName = "about",
+            h2("About")) 
+     #          fluidRow(
+      #           row(background = )
+       #        ))) #For Camila to incorporate 
+    
+            ))
+
+#################################################################             
+####Camila's code to be incorporated into the "About" tab#########
+##################################################################
+
+#navbarPage("Playing with Fire... Data",
+           
+#           sidebarLayout(
+ #            sidebarPanel(
+  #             tags$img(src='justin_sullivan_getty_images.jpg', height=150, width=175),
+   #            tags$figcaption("A firefighter monitoring the Mendocino Complex fire on Aug. 7, 2018. Justin Sullivan/Getty Images")
+    #         ),
+     #        mainPanel("A summary of the app, what it does, how to use it and a description of the data (including citations). Plus small background info paragraph on significance of fires in CA")),
+      #     tabPanel("Map"),
+       #    tabPanel("Graphs",
+        #            sidebarLayout(
+         #             sidebarPanel(
+          #              tags$img(src='thomas_fire.jpg', height=150, width=175),
+           #             tags$figcaption("Caption/source")
+            #          ),
+             #         mainPanel(plotOutput("acresPlot"))))))
 
 
 
