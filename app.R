@@ -78,7 +78,7 @@ top100 <- st_transform(top100, crs = 4326)
 ##############################################################################
 # UI
 ##############################################################################
-header <- dashboardHeader(title = "Playing With Fire...Data")
+header <- dashboardHeader(title = "Playing With Fire...Data", titleWidth = 250)
 
 
 
