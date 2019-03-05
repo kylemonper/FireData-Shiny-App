@@ -22,6 +22,11 @@ library(colorspace)
 
 fire <- st_read("Fire_Output.shp")
 
+eco <- st_read("ca_eco.shp") %>% 
+  dplyr::select(US_L3NAME) %>% 
+  rename(Region = US_L3NAME) %>% 
+  st_simplify(dTolerance = 100) %>% # Simplify polygons so maps don't take forever to load
+  st_transform(crs = 4326)
 
 ```
 
@@ -59,7 +64,6 @@ top100 <- top100 %>%
 ```
 
 
-
 ```{r}
 #Testing to see if wrangling done in Shiny actually does what its supposed to
 reactive_cause_test<- top100 %>%
@@ -84,10 +88,24 @@ centroid_less <- centroid %>%
 
 
 top100 <- merge(top100, centroid_less, by = "GIS_ACRES")
+
+
 ```
 
 ```{r}
+# Eco-regoin wrangling
+# eco_join <- eco %>% # polygons
+  # st_join(top100) # Join the info from previous line with info in top100
 
+eco_intersect <- eco %>% 
+  st_intersection(top100) %>% 
+  group_by(Region)
+
+eco_pie <- st_set_geometry(eco_intersect, NULL) %>% 
+    select(Region, GIS_ACRES)
+
+names(eco_pie) <- c("name","value")
+```
 
 ```
 
