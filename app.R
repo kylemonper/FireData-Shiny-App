@@ -162,40 +162,23 @@ body <- dashboardBody(
                          title = "<b>Fire Causes</b>",
                          plotOutput("causePlot")),
                      plotlyOutput("pie"))))),
-   tabItem(tabName = "about",
-            h2("About")) 
-     #          fluidRow(
-      #           row(background = )
-       #        ))) #For Camila to incorporate 
-    
-            ))
-
-#################################################################             
-####Camila's code to be incorporated into the "About" tab#########
-##################################################################
-
-#navbarPage("Playing with Fire... Data",
-           
-#           sidebarLayout(
- #            sidebarPanel(
-  #             tags$img(src='justin_sullivan_getty_images.jpg', height=150, width=175),
-   #            tags$figcaption("A firefighter monitoring the Mendocino Complex fire on Aug. 7, 2018. Justin Sullivan/Getty Images")
-    #         ),
-     #        mainPanel("A summary of the app, what it does, how to use it and a description of the data (including citations). Plus small background info paragraph on significance of fires in CA")),
-      #     tabPanel("Map"),
-       #    tabPanel("Graphs",
-        #            sidebarLayout(
-         #             sidebarPanel(
-          #              tags$img(src='thomas_fire.jpg', height=150, width=175),
-           #             tags$figcaption("Caption/source")
-            #          ),
-             #         mainPanel(plotOutput("acresPlot"))))))
-
-
-
+   #About tab
+    tabItem(tabName = "about",
+            h2("About", 
+              fluidRow(
+                column(width = 4,
+                        box(width = 9,
+                            tags$img(src='justin_sullivan_getty_images.jpg', height=150, width=175),
+                            h5("A firefighter monitoring the Mendocino Complex fire on Aug. 7, 2018. Justin Sullivan/Getty Images"),
+                            tags$img(src='thomas_fire.jpg', height=150, width=175),
+                            h5("caption and source"))),
+            column(8,
+                   fluidRow(width = 12,
+                            box(background = "black",
+                                title = "Description of how to use the app.."))
+            ))))))
 
 ui <- dashboardPage(header, sidebar, body)
-
 
 ##############################################################################
 # Server Side
