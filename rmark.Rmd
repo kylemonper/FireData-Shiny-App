@@ -19,6 +19,10 @@ library(spData)
 library(varhandle)
 library(RColorBrewer)
 library(colorspace)
+require(sp)
+require(rgdal)
+require(maps)
+
 
 fire <- st_read("Fire_Output.shp")
 
@@ -87,7 +91,10 @@ top100 <- merge(top100, centroid_less, by = "GIS_ACRES")
 ```
 
 ```{r}
+eco <- sf::st_read(".", layer = "ca_eco")
 
+spatialFrame
+inside <- sp::over(centroid$geometry, eco)
 
 ```
 
