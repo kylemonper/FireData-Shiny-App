@@ -93,18 +93,21 @@ top100 <- merge(top100, centroid_less, by = "GIS_ACRES")
 ```
 
 ```{r}
-# Eco-regoin wrangling
-# eco_join <- eco %>% # polygons
-  # st_join(top100) # Join the info from previous line with info in top100
-
+# Eco region wrangling and pie-chart
 eco_intersect <- eco %>% 
-  st_intersection(top100) %>% 
-  group_by(Region)
+  st_intersection(top100)
 
-eco_pie <- st_set_geometry(eco_intersect, NULL) %>% 
-    select(Region, GIS_ACRES)
+eco_pie_df <- st_set_geometry(eco_intersect, NULL)
 
-names(eco_pie) <- c("name","value")
+eco_pie <- data.frame("Categorie"=rownames(eco_pie_df), eco_pie_df)
+
+pie <- plot_ly(eco_pie, labels = ~Region, values = ~GIS_ACRES, type = 'pie') %>%
+  layout(title = 'Acres Burned',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+pie
+
 ```
 
 ```
