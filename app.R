@@ -5,6 +5,7 @@ library(leaflet)
 library(varhandle)
 library(DT)
 library(shinydashboard)
+library(RColorBrewer)
 
 #library(fontawesome)
 
@@ -18,9 +19,6 @@ library(shinydashboard)
 #cool to do
 # - make data table reactive - KYLE
 #set default of causeplot to "All", make it reactive with map - JENNY with KYLE help?
-
-
-
 
 
 ##############################################################################
@@ -130,7 +128,7 @@ sidebar <- dashboardSidebar(
                                     "Sonoran Basin and Range" = "Sonoran Basin and Range",
                                     "Southern California Mountains" = "Southern California Mountains",
                                     "Southern California/Northern Baja Coast" = "Southern California/Northern Baja Coast"),
-                     selected = "Cascades")
+                     selected = 'Cascades')
 )
 
 
@@ -310,7 +308,16 @@ server <- function(input, output, session) {
   })
   
 #reactive pie chart
-  output$pie <- renderPlotly({plot_ly(reactive_region(), labels = ~Region, values = ~GIS_ACRES, type = 'pie') %>%
+  
+  ecocolors <- c('rgb(211,94,96)', 'rgb(128,133,133)', 'rgb(144,103,167)', 'rgb(171,104,87)', 'rgb(114,147,203)','rgb(211,94,96)', 'rgb(128,133,133)', 'rgb(144,103,167)', 'rgb(171,104,87)', 'rgb(114,147,203)','rgb(171,104,87)', 'rgb(114,147,203)')
+  
+  output$pie <- renderPlotly({
+    plot_ly(reactive_region(),
+            labels = ~Region, 
+            values = ~GIS_ACRES, 
+            type = 'pie',
+            marker = list(colors = ecocolors)) %>%
+      layout(legend = list(orientation = 'h')) %>% 
     layout(title = 'Acres Burned',
            xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
            yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
