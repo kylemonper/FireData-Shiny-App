@@ -13,16 +13,16 @@ library(shinydashboard)
 #####to do list#####
 # must do:
 # - finish graphs - CAMILA/JENNY WORK ON (Jenny to just brainstorm, Camila to code)
-
+# - fix layout: table below map, valueOutputs and graphs on side https://rstudio.github.io/shinydashboard/structure.html - DONE? FOR THE MOST PART?
 # - Fill out the 'about sectiion' and make it its own page - CAMILA FINISH
-
+# - get widgets gathered under 'dashboard' menu item - JENNY
 
 #cool to do
 # - make data table reactive - CAMILA with KYLE help?
 #set default of causeplot to "All", make it reactive with map - JENNY with KYLE help?
 
 
-###
+
 
 
 ##############################################################################
@@ -68,12 +68,24 @@ top100 <- merge(top100, centroid_less, by = "GIS_ACRES") %>%
   arrange(YEAR_)
 
 
- 
+
 
 #change projection to be compatible with leaflet
 top100 <- st_transform(top100, crs = 4326)
 
+#ecoregion wrangling
+eco <- st_read("ca_eco.shp") %>% 
+  dplyr::select(US_L3NAME) %>% 
+  rename(Region = US_L3NAME) %>% 
+  st_simplify(dTolerance = 100) %>% # Simplify polygons so maps don't take forever to load
+  st_transform(crs = 4326)
 
+eco_intersect <- eco %>% 
+  st_intersection(top100)
+
+eco_pie_df <- st_set_geometry(eco_intersect, NULL)
+
+eco_pie <- data.frame("Categorie"=rownames(eco_pie_df), eco_pie_df)
 
 ##############################################################################
 # UI
@@ -86,12 +98,12 @@ header <- dashboardHeader(title = "Playing With Fire...Data", titleWidth = 250)
 sidebar <- dashboardSidebar(
   #side bar tabs: 
   sidebarMenu(
-    #About tab
     menuItem("About", tabName = "about", icon = icon("fab fa-info-circle",lib='font-awesome')),
-    
-    #Dashboard tab
     menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"), selected = TRUE),
-    
+    menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
+             href = "https://github.com/kylemonper/FireData-Shiny-App"),
+    id = "tabs"
+  ),
   #slider for year selection
   sliderInput("date_range",               
               label = "Select Date", 
@@ -105,12 +117,22 @@ sidebar <- dashboardSidebar(
   selectInput(inputId = "cause",        
               label = "Cause of Fire", 
               choices = c(sort(unique(top100$CAUSE)),'All')),
-  
-  #Source code tab
-  menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
-           href = "https://github.com/kylemonper/FireData-Shiny-App"),
-  id = "tabs"
-  )
+  #eco checkbox
+  checkboxGroupInput("checkRegion",
+                     label = "Select Eco-Region",
+                     choices = list("Cascades" = "Cascades",
+                                    "Central Basin and Range" = "Central Basin and Range",
+                                    "Central California Foothills and Coastal Mountains" = "Central California Foothills and Coastal Mountains",
+                                    "Central California Valley" = "Central California Valley",
+                                    "Eastern Cascades Slopes and Foothills" = "Eastern Cascades Slopes and Foothills",
+                                    "Klamath Mountains/California High North Coast Range" = "Klamath Mountains/California High North Coast Range",
+                                    "Mojave Basin and Range" = "Mojave Basin and Range",
+                                    "Northern Basin and Range" = "Northern Basin and Range",
+                                    "Sierra Nevada" = "Sierra Nevada",
+                                    "Sonoran Basin and Range" = "Sonoran Basin and Range",
+                                    "Southern California Mountains" = "Southern California Mountains",
+                                    "Southern California/Northern Baja Coast" = "Southern California/Northern Baja Coast"),
+                     selected = "Cascades")
 )
 
 
@@ -119,7 +141,6 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
   tabItems( 
-    #Dashboard tab
     tabItem(tabName = "dashboard",
             h2(fluidRow(
               #first column, with map and table
@@ -140,9 +161,9 @@ body <- dashboardBody(
                                   valueBoxOutput("acres", width = 8))),
                      box(width = 14,
                          background = "blue",
-                         title = "  Fire Causes  ",
-                         plotOutput("causePlot")))))),
-    #About tab
+                         title = "<b>Fire Causes</b>",
+                         plotOutput("causePlot")),
+                     plotlyOutput("pie"))))),
    tabItem(tabName = "about",
             h2("About")) 
      #          fluidRow(
@@ -186,7 +207,6 @@ server <- function(input, output, session) {
   
   ##############Reactive Variables###################
   
- 
   #create new reactive df based on slider date inpute in the ui
   reactive_date <- reactive({
     top100 %>%
@@ -200,8 +220,15 @@ server <- function(input, output, session) {
       st_drop_geometry(.)
   })
   
+  ########################eco pie##############################
   
-#create reactive df based on selection of cause inpute in the ui
+  reactive_region <- reactive({
+    eco_pie %>% 
+      filter(Region == input$checkRegion)
+  })
+  
+  ########################cause plot###########################
+
   reactive_cause<- reactive({
     if(input$cause == 'All') 
     {top100 %>% 
@@ -217,16 +244,6 @@ server <- function(input, output, session) {
         mutate(acres_burn_tot_1000 = acres_burn_tot/1000)
     }})
   
- #Make all outputs reactive with all widgets 
-  
-  reactive_all <<- reactive({
-    top100 %>% 
-      filter(YEAR_ == reactive_date(), CAUSE == reactive_cause)
-    
-  })
-  
-  
-  #######################Cause Plot##################################################
   
   #Make plot based on cause
   output$causePlot <- renderPlot({
@@ -310,6 +327,13 @@ server <- function(input, output, session) {
         
       ) 
   })
+  
+#reactive pie chart
+  output$pie <- renderPlotly({plot_ly(reactive_region(), labels = ~Region, values = ~GIS_ACRES, type = 'pie') %>%
+    layout(title = 'Acres Burned',
+           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+})
 }
 
 # Run the application 
