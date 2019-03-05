@@ -84,44 +84,27 @@ header <- dashboardHeader(title = "Playing With Fire...Data", titleWidth = 250)
 
 ####### Sidebar
 sidebar <- dashboardSidebar(
-  ##slider for year selection
- # sliderInput("date_range",               
-  #            label = "Select Date", 
-   #           min = min(top100$YEAR_), 
-    #          max = max(top100$YEAR_),
-     #         value = range(top100$YEAR_),
-      #        step = 1,
-       #       sep = "",
-        #      width = 400),
-  #select Causes
-#  selectInput(inputId = "cause",        
- #             label = "Cause of Fire", 
-  #            choices = c(sort(unique(top100$CAUSE)),'All')),
-  
   #side bar tabs: 
   sidebarMenu(
-    menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"),
-            
-               #slider for year selection
-               sliderInput("date_range",               
-                           label = "Select Date", 
-                           min = min(top100$YEAR_), 
-                           max = max(top100$YEAR_),
-                           value = range(top100$YEAR_),
-                           step = 1,
-                           sep = "",
-                           width = 400),
-            
-               #select Cause 
-               selectInput(inputId = "cause",        
-                           label = "Cause of Fire", 
-                           choices = c(sort(unique(top100$CAUSE)),'All'))
-             ),
-    menuItem("About", tabName = "about", icon = icon("fab fa-info-circle",lib='font-awesome'), selected = TRUE),
+    menuItem("About", tabName = "about", icon = icon("fab fa-info-circle",lib='font-awesome')),
+    menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"), selected = TRUE),
     menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
              href = "https://github.com/kylemonper/FireData-Shiny-App"),
     id = "tabs"
-  )
+  ),
+  #slider for year selection
+  sliderInput("date_range",               
+              label = "Select Date", 
+              min = min(top100$YEAR_), 
+              max = max(top100$YEAR_),
+              value = range(top100$YEAR_),
+              step = 1,
+              sep = "",
+              width = 400),
+  #select Causes
+  selectInput(inputId = "cause",        
+              label = "Cause of Fire", 
+              choices = c(sort(unique(top100$CAUSE)),'All'))
 )
 
 
