@@ -13,9 +13,9 @@ library(shinydashboard)
 #####to do list#####
 # must do:
 # - finish graphs - CAMILA/JENNY WORK ON (Jenny to just brainstorm, Camila to code)
-# - fix layout: table below map, valueOutputs and graphs on side https://rstudio.github.io/shinydashboard/structure.html - DONE? FOR THE MOST PART?
+
 # - Fill out the 'about sectiion' and make it its own page - CAMILA FINISH
-# - get widgets gathered under 'dashboard' menu item - JENNY
+
 
 #cool to do
 # - make data table reactive - CAMILA with KYLE help?
@@ -68,7 +68,7 @@ top100 <- merge(top100, centroid_less, by = "GIS_ACRES") %>%
   arrange(YEAR_)
 
 
-
+ 
 
 #change projection to be compatible with leaflet
 top100 <- st_transform(top100, crs = 4326)
@@ -86,12 +86,12 @@ header <- dashboardHeader(title = "Playing With Fire...Data", titleWidth = 250)
 sidebar <- dashboardSidebar(
   #side bar tabs: 
   sidebarMenu(
+    #About tab
     menuItem("About", tabName = "about", icon = icon("fab fa-info-circle",lib='font-awesome')),
+    
+    #Dashboard tab
     menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"), selected = TRUE),
-    menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
-             href = "https://github.com/kylemonper/FireData-Shiny-App"),
-    id = "tabs"
-  ),
+    
   #slider for year selection
   sliderInput("date_range",               
               label = "Select Date", 
@@ -104,7 +104,13 @@ sidebar <- dashboardSidebar(
   #select Causes
   selectInput(inputId = "cause",        
               label = "Cause of Fire", 
-              choices = c(sort(unique(top100$CAUSE)),'All'))
+              choices = c(sort(unique(top100$CAUSE)),'All')),
+  
+  #Source code tab
+  menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
+           href = "https://github.com/kylemonper/FireData-Shiny-App"),
+  id = "tabs"
+  )
 )
 
 
@@ -113,6 +119,7 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
   tabItems( 
+    #Dashboard tab
     tabItem(tabName = "dashboard",
             h2(fluidRow(
               #first column, with map and table
@@ -133,8 +140,9 @@ body <- dashboardBody(
                                   valueBoxOutput("acres", width = 8))),
                      box(width = 14,
                          background = "blue",
-                         title = "<b>Fire Causes</b>",
+                         title = "  Fire Causes  ",
                          plotOutput("causePlot")))))),
+    #About tab
    tabItem(tabName = "about",
             h2("About")) 
      #          fluidRow(
@@ -178,6 +186,7 @@ server <- function(input, output, session) {
   
   ##############Reactive Variables###################
   
+ 
   #create new reactive df based on slider date inpute in the ui
   reactive_date <- reactive({
     top100 %>%
@@ -192,8 +201,7 @@ server <- function(input, output, session) {
   })
   
   
-  ########################cause plot###########################
-
+#create reactive df based on selection of cause inpute in the ui
   reactive_cause<- reactive({
     if(input$cause == 'All') 
     {top100 %>% 
@@ -209,6 +217,16 @@ server <- function(input, output, session) {
         mutate(acres_burn_tot_1000 = acres_burn_tot/1000)
     }})
   
+ #Make all outputs reactive with all widgets 
+  
+  reactive_all <<- reactive({
+    top100 %>% 
+      filter(YEAR_ == reactive_date(), CAUSE == reactive_cause)
+    
+  })
+  
+  
+  #######################Cause Plot##################################################
   
   #Make plot based on cause
   output$causePlot <- renderPlot({
