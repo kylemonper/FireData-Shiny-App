@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 title: "Shiny_fire"
 author: "Kyle Monper"
@@ -112,3 +113,133 @@ inside <- sp::over(centroid$geometry, eco)
 
 
 
+=======
+---
+title: "Shiny_fire"
+author: "Kyle Monper"
+date: "January 24, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message = F}
+library(tidyverse)
+library(sf)
+library(leaflet)
+library(shiny)
+library(plotly)
+library(spData)
+library(varhandle)
+library(RColorBrewer)
+library(colorspace)
+
+fire <- st_read("Fire_Output.shp")
+
+eco <- st_read("ca_eco.shp") %>% 
+  dplyr::select(US_L3NAME) %>% 
+  rename(Region = US_L3NAME) %>% 
+  st_simplify(dTolerance = 100) %>% # Simplify polygons so maps don't take forever to load
+  st_transform(crs = 4326)
+
+```
+
+
+```{r}
+
+top100 <- fire %>% 
+  select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
+  arrange(-GIS_ACRES)
+
+top100$YEAR_ <- unfactor(top100$YEAR_)
+
+top100 <- top100[1:100,] %>% 
+  mutate(CAUSE = case_when(
+    CAUSE == 1 ~ "Lightning",
+    CAUSE == 2 ~ "Equipment Use",
+    CAUSE == 4 ~ "Campfire",
+    CAUSE == 5 ~ "Debris",
+    CAUSE == 6 ~ "Railroad",
+    CAUSE == 7 ~ "Arson",
+    CAUSE == 9 ~ "Miscellaneous",
+    CAUSE == 10 ~ "Vehicle",
+    CAUSE == 11 ~ "Power Line",
+    CAUSE == 14 ~ "Unknown/Unidentified"
+  )) %>% 
+  arrange(YEAR_)
+
+
+```
+
+try this for simplifying the polygons
+```{r}
+top100 <- top100 %>% 
+  st_simplify(dTolerance = 5000)
+```
+
+
+```{r}
+#Testing to see if wrangling done in Shiny actually does what its supposed to
+reactive_cause_test<- top100 %>%
+      filter(CAUSE == "Miscellaneous") %>% 
+      group_by(YEAR_) %>% 
+      summarize(acres_burn_tot = sum(GIS_ACRES))
+```
+
+
+
+```{r}
+top100 <- st_transform(top100, crs = 4326)
+
+centroid <- st_centroid(top100)
+
+
+centroid_less <- centroid %>% 
+  mutate(lat = unlist(map(centroid$geometry,1)),
+           long = unlist(map(centroid$geometry,2))) %>% 
+  select(GIS_ACRES, lat, long) %>% 
+  st_drop_geometry()
+
+
+top100 <- merge(top100, centroid_less, by = "GIS_ACRES")
+
+
+```
+
+```{r}
+# Eco region wrangling and pie-chart
+eco_intersect <- eco %>% 
+  st_intersection(top100)
+
+eco_pie_df <- st_set_geometry(eco_intersect, NULL)
+
+eco_pie <- data.frame("Categorie"=rownames(eco_pie_df), eco_pie_df)
+
+pie <- plot_ly(eco_pie, labels = ~Region, values = ~GIS_ACRES, type = 'pie') %>%
+  layout(title = 'Acres Burned',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+pie
+
+```
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> 365cf5ede471ab5235bad210a032cf0e9c58ab16

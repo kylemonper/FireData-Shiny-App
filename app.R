@@ -12,13 +12,11 @@ library(shinydashboard)
 #testing github
 #####to do list#####
 # must do:
-# - finish graphs - CAMILA/JENNY WORK ON (Jenny to just brainstorm, Camila to code)
-# - fix layout: table below map, valueOutputs and graphs on side https://rstudio.github.io/shinydashboard/structure.html - DONE? FOR THE MOST PART?
-# - Fill out the 'about sectiion' and make it its own page - CAMILA FINISH
-# - get widgets gathered under 'dashboard' menu item - JENNY
+# - Pie chart - aesthetic, date slider (keep brainstorming) CAMILA (JENNY help brainstorm?)
+# - Fill out the 'about section' and make it its own page - CAMILA/JENNY FINISH
 
 #cool to do
-# - make data table reactive - CAMILA with KYLE help?
+# - make data table reactive - KYLE
 #set default of causeplot to "All", make it reactive with map - JENNY with KYLE help?
 
 
@@ -73,7 +71,19 @@ top100 <- merge(top100, centroid_less, by = "GIS_ACRES") %>%
 #change projection to be compatible with leaflet
 top100 <- st_transform(top100, crs = 4326)
 
+#ecoregion wrangling
+eco <- st_read("ca_eco.shp") %>% 
+  dplyr::select(US_L3NAME) %>% 
+  rename(Region = US_L3NAME) %>% 
+  st_simplify(dTolerance = 100) %>% # Simplify polygons so maps don't take forever to load
+  st_transform(crs = 4326)
 
+eco_intersect <- eco %>% 
+  st_intersection(top100)
+
+eco_pie_df <- st_set_geometry(eco_intersect, NULL)
+
+eco_pie <- data.frame("Categorie"=rownames(eco_pie_df), eco_pie_df)
 
 ##############################################################################
 # UI
@@ -104,7 +114,23 @@ sidebar <- dashboardSidebar(
   #select Causes
   selectInput(inputId = "cause",        
               label = "Cause of Fire", 
-              choices = c(sort(unique(top100$CAUSE)),'All'))
+              choices = c(sort(unique(top100$CAUSE)),'All')),
+  #eco checkbox
+  checkboxGroupInput("checkRegion",
+                     label = "Select Eco-Region",
+                     choices = list("Cascades" = "Cascades",
+                                    "Central Basin and Range" = "Central Basin and Range",
+                                    "Central California Foothills and Coastal Mountains" = "Central California Foothills and Coastal Mountains",
+                                    "Central California Valley" = "Central California Valley",
+                                    "Eastern Cascades Slopes and Foothills" = "Eastern Cascades Slopes and Foothills",
+                                    "Klamath Mountains/California High North Coast Range" = "Klamath Mountains/California High North Coast Range",
+                                    "Mojave Basin and Range" = "Mojave Basin and Range",
+                                    "Northern Basin and Range" = "Northern Basin and Range",
+                                    "Sierra Nevada" = "Sierra Nevada",
+                                    "Sonoran Basin and Range" = "Sonoran Basin and Range",
+                                    "Southern California Mountains" = "Southern California Mountains",
+                                    "Southern California/Northern Baja Coast" = "Southern California/Northern Baja Coast"),
+                     selected = "Cascades")
 )
 
 
@@ -134,7 +160,8 @@ body <- dashboardBody(
                      box(width = 14,
                          background = "blue",
                          title = "<b>Fire Causes</b>",
-                         plotOutput("causePlot")))))),
+                         plotOutput("causePlot")),
+                     plotlyOutput("pie"))))),
    tabItem(tabName = "about",
             h2("About")) 
      #          fluidRow(
@@ -191,6 +218,12 @@ server <- function(input, output, session) {
       st_drop_geometry(.)
   })
   
+  ########################eco pie##############################
+  
+  reactive_region <- reactive({
+    eco_pie %>% 
+      filter(Region == input$checkRegion)
+  })
   
   ########################cause plot###########################
 
@@ -292,6 +325,13 @@ server <- function(input, output, session) {
         
       ) 
   })
+  
+#reactive pie chart
+  output$pie <- renderPlotly({plot_ly(reactive_region(), labels = ~Region, values = ~GIS_ACRES, type = 'pie') %>%
+    layout(title = 'Acres Burned',
+           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+})
 }
 
 # Run the application 
