@@ -6,6 +6,8 @@ library(varhandle)
 library(DT)
 library(shinydashboard)
 library(RColorBrewer)
+library(plotly)
+
 
 #library(fontawesome)
 
@@ -16,6 +18,8 @@ library(RColorBrewer)
 # - Pie chart - customize colors CAMILA
 # - Quick stats for pie chart are incorrect - CAMILA with help from JENNY & KYLE?
 # - Fill out the 'about section' - CAMILA to draft, JENNY & KYLE to edit
+# - Bar chart - fix wrangling and make each cause different color JENNY wit KYLE help? 
+
 
 #cool to do
 # - make data table reactive - KYLE
@@ -97,8 +101,6 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("About", tabName = "about", icon = icon("fab fa-info-circle",lib='font-awesome')),
     menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"), selected = TRUE),
-    menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
-             href = "https://github.com/kylemonper/FireData-Shiny-App"),
     id = "tabs"
   ),
   #map slider for year selection
@@ -123,8 +125,13 @@ sidebar <- dashboardSidebar(
               value = range(eco_pie$YEAR_),
               step = 1,
               sep = "",
-              width = 400))
-  
+              width = 400),
+
+#Get Source Code tab
+menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
+         href = "https://github.com/kylemonper/FireData-Shiny-App"))
+
+
   
   #ECO CHECKBOX - OLD CODE
 #  checkboxGroupInput("checkRegion",
@@ -176,11 +183,12 @@ body <- dashboardBody(
                                   valueBoxOutput("acres_pie", width = 8))),
                      box(width = 14,
                          background = "black",
-                         title = "Fire Causes",
+                         title = "Acres Burned by Cause",
                          plotOutput("causePlot")),
               
                      box(width = 14,
                          background = "black",
+                         title = "Acres Burned by Eco-Region",
                   plotlyOutput("pie", height = 600, width = 300))
                   )))),
    #About tab
@@ -253,19 +261,7 @@ server <- function(input, output, session) {
     }})
   
   
-  #Make plot based on cause
-  output$causePlot <- renderPlot({
-    
-    # draw the plot with the specified cause
-    ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000))+
-      geom_col(fill = "firebrick1", colour = "firebrick4")+
-      theme_classic()+
-      scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
-      scale_y_continuous(expand = c(0,0), limit = c(0, 510))+
-      labs(y = "Fire Size (Thousands of Acres)", x = "Year")
-  })
-  
-  
+
   
   ############################Value Boxes######################
  
@@ -358,7 +354,7 @@ server <- function(input, output, session) {
       ) 
   })
   
-#reactive pie chart
+###############################reactive pie chart##################################
   
   ecocolors <- c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)', 'rgb(112,128,144)')
   
@@ -370,10 +366,25 @@ server <- function(input, output, session) {
            # marker = list(color = c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)','rgb(112,128,144)'))) %>% 
            marker = list(colors = ecocolors)) %>%
       layout(legend = list(orientation = 'h')) %>% 
-    layout(title = 'Acres Burned',
-           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+    layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
            yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    
 })
+
+#####################################reactive bar chart######################################
+  #Make plot based on cause
+  output$causePlot <- renderPlot({
+    
+    # draw the plot with the specified cause
+    ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000))+
+      geom_col(fill = "firebrick1", colour = "firebrick4", width = 5)+
+      theme_classic()+
+      scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
+      scale_y_continuous(expand = c(0,0), limit = c(0, 510))+
+      labs(y = "Fire Size (Thousands of Acres)", x = "Year")
+  })
+  
+  
 }
 
 # Run the application 
