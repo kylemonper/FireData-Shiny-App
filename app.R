@@ -128,7 +128,7 @@ sidebar <- dashboardSidebar(
                                     "Sonoran Basin and Range" = "Sonoran Basin and Range",
                                     "Southern California Mountains" = "Southern California Mountains",
                                     "Southern California/Northern Baja Coast" = "Southern California/Northern Baja Coast"),
-                     selected = 'Cascades')
+                     selected = eco$Region)
 )
 
 
@@ -309,7 +309,7 @@ server <- function(input, output, session) {
   
 #reactive pie chart
   
-  ecocolors <- c('rgb(211,94,96)', 'rgb(128,133,133)', 'rgb(144,103,167)', 'rgb(171,104,87)', 'rgb(114,147,203)','rgb(211,94,96)', 'rgb(128,133,133)', 'rgb(144,103,167)', 'rgb(171,104,87)', 'rgb(114,147,203)','rgb(171,104,87)', 'rgb(114,147,203)')
+  ecocolors <- c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)')
   
   output$pie <- renderPlotly({
     plot_ly(reactive_region(),
