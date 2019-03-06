@@ -5,6 +5,8 @@ library(leaflet)
 library(varhandle)
 library(DT)
 library(shinydashboard)
+library(RColorBrewer)
+library(plotly)
 
 
 #library(fontawesome)
@@ -13,15 +15,15 @@ library(shinydashboard)
 #testing github
 #####to do list#####
 # must do:
-# - Pie chart - aesthetic, date slider (keep brainstorming) CAMILA (JENNY help brainstorm?)
-# - Fill out the 'about section' and make it its own page - CAMILA/JENNY FINISH
+# - Pie chart - customize colors CAMILA
+# - Quick stats for pie chart are incorrect - CAMILA with help from JENNY & KYLE?
+# - Fill out the 'about section' - CAMILA to draft, JENNY & KYLE to edit
+# - Bar chart - fix wrangling and make each cause different color JENNY wit KYLE help? 
+
 
 #cool to do
 # - make data table reactive - KYLE
 #set default of causeplot to "All", make it reactive with map - JENNY with KYLE help?
-
-
-
 
 
 ##############################################################################
@@ -99,13 +101,11 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("About", tabName = "about", icon = icon("fab fa-info-circle",lib='font-awesome')),
     menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"), selected = TRUE),
-    menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
-             href = "https://github.com/kylemonper/FireData-Shiny-App"),
     id = "tabs"
   ),
-  #slider for year selection
+  #map slider for year selection
   sliderInput("date_range",               
-              label = "Select Date", 
+              label = "Select Date for Map", 
               min = min(top100$YEAR_), 
               max = max(top100$YEAR_),
               value = range(top100$YEAR_),
@@ -116,24 +116,40 @@ sidebar <- dashboardSidebar(
   selectInput(inputId = "cause",        
               label = "Cause of Fire", 
               choices = c(sort(unique(top100$CAUSE)),'All')),
-  #eco checkbox
-  checkboxGroupInput("checkRegion",
-                     label = "Select Eco-Region",
-                     choices = list("Cascades" = "Cascades",
-                                    "Central Basin and Range" = "Central Basin and Range",
-                                    "Central California Foothills and Coastal Mountains" = "Central California Foothills and Coastal Mountains",
-                                    "Central California Valley" = "Central California Valley",
-                                    "Eastern Cascades Slopes and Foothills" = "Eastern Cascades Slopes and Foothills",
-                                    "Klamath Mountains/California High North Coast Range" = "Klamath Mountains/California High North Coast Range",
-                                    "Mojave Basin and Range" = "Mojave Basin and Range",
-                                    "Northern Basin and Range" = "Northern Basin and Range",
-                                    "Sierra Nevada" = "Sierra Nevada",
-                                    "Sonoran Basin and Range" = "Sonoran Basin and Range",
-                                    "Southern California Mountains" = "Southern California Mountains",
-                                    "Southern California/Northern Baja Coast" = "Southern California/Northern Baja Coast"),
-                     selected = "Cascades")
-)
+  
+  #eco slider for year selection
+  sliderInput("date_range_eco",               
+              label = "Select Date for Pie Chart", 
+              min = min(eco_pie$YEAR_), 
+              max = max(eco_pie$YEAR_),
+              value = range(eco_pie$YEAR_),
+              step = 1,
+              sep = "",
+              width = 400),
 
+#Get Source Code tab
+menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
+         href = "https://github.com/kylemonper/FireData-Shiny-App"))
+
+
+  
+  #ECO CHECKBOX - OLD CODE
+#  checkboxGroupInput("checkRegion",
+    #                 label = "Select Eco-Region",
+     #                choices = list("Cascades" = "Cascades",
+      #                              "Central Basin and Range" = "Central Basin and Range",
+           #                         "Central California Foothills and Coastal Mountains" = "Central California Foothills and Coastal Mountains",
+#                                    "Central California Valley" = "Central California Valley",
+ #                                   "Eastern Cascades Slopes and Foothills" = "Eastern Cascades Slopes and Foothills",
+           #                         "Klamath Mountains/California High North Coast Range" = "Klamath Mountains/California High North Coast Range",
+                     #               "Mojave Basin and Range" = "Mojave Basin and Range",
+                      #              "Northern Basin and Range" = "Northern Basin and Range",
+                       #             "Sierra Nevada" = "Sierra Nevada",
+                        #            "Sonoran Basin and Range" = "Sonoran Basin and Range",
+                         #           "Southern California Mountains" = "Southern California Mountains",
+                          #          "Southern California/Northern Baja Coast" = "Southern California/Northern Baja Coast"),
+              #       selected = eco$Region)
+# )
 
 
 ##### Designing the dashboard Body Layout
@@ -149,54 +165,49 @@ body <- dashboardBody(
                          leafletOutput("map", height = 700, width = 600)),
                      box(width = 12,
                          dataTableOutput('dto', width = 600))),
+                     
               #second column with graphs and info boxes
               column(4,
                      fluidRow(width = 4,
                               box(width = 12,
-                                  title = "Quick Stats", 
-                                  background = "blue",
+                                  title = "Quick Stats for Map", 
+                                  background = "black",
                                   solidHeader = TRUE,
                                   valueBoxOutput("count", width = 4),
-                                  valueBoxOutput("acres", width = 8))),
+                                  valueBoxOutput("acres", width = 8)),
+                              box(width = 12,
+                                  title = "Quick Stats for Pie Chart", 
+                                  background = "black",
+                                  solidHeader = TRUE,
+                                  valueBoxOutput("count_pie", width = 4),
+                                  valueBoxOutput("acres_pie", width = 8))),
                      box(width = 14,
-                         background = "blue",
-                         title = "<b>Fire Causes</b>",
+                         background = "black",
+                         title = "Acres Burned by Cause",
                          plotOutput("causePlot")),
-                     plotlyOutput("pie"))))),
-   tabItem(tabName = "about",
-            h2("About")) 
-     #          fluidRow(
-      #           row(background = )
-       #        ))) #For Camila to incorporate 
-    
-            ))
-
-#################################################################             
-####Camila's code to be incorporated into the "About" tab#########
-##################################################################
-
-#navbarPage("Playing with Fire... Data",
-           
-#           sidebarLayout(
- #            sidebarPanel(
-  #             tags$img(src='justin_sullivan_getty_images.jpg', height=150, width=175),
-   #            tags$figcaption("A firefighter monitoring the Mendocino Complex fire on Aug. 7, 2018. Justin Sullivan/Getty Images")
-    #         ),
-     #        mainPanel("A summary of the app, what it does, how to use it and a description of the data (including citations). Plus small background info paragraph on significance of fires in CA")),
-      #     tabPanel("Map"),
-       #    tabPanel("Graphs",
-        #            sidebarLayout(
-         #             sidebarPanel(
-          #              tags$img(src='thomas_fire.jpg', height=150, width=175),
-           #             tags$figcaption("Caption/source")
-            #          ),
-             #         mainPanel(plotOutput("acresPlot"))))))
-
-
-
+              
+                     box(width = 14,
+                         background = "black",
+                         title = "Acres Burned by Eco-Region",
+                  plotlyOutput("pie", height = 600, width = 300))
+                  )))),
+   #About tab
+    tabItem(tabName = "about",
+            h2("About", 
+              fluidRow(
+                column(width = 4,
+                        box(width = 9,
+                            tags$img(src='justin_sullivan_getty_images.jpg', height=150, width=175),
+                            h5("A firefighter monitoring the Mendocino Complex fire on Aug. 7, 2018. Justin Sullivan/Getty Images"),
+                            tags$img(src='thomas_fire.jpg', height=150, width=175),
+                            h5("caption and source"))),
+            column(8,
+                   fluidRow(width = 12,
+                            box(background = "black",
+                                title = "Description of how to use the app.."))
+            ))))))
 
 ui <- dashboardPage(header, sidebar, body)
-
 
 ##############################################################################
 # Server Side
@@ -221,9 +232,16 @@ server <- function(input, output, session) {
   
   ########################eco pie##############################
   
-  reactive_region <- reactive({
-    eco_pie %>% 
-      filter(Region == input$checkRegion)
+  #Check boxes for eco region
+ # reactive_region <- reactive({
+  #  eco_pie %>% 
+   #   filter(Region == input$checkRegion)
+ # })
+  
+  # Date slider for eco region
+ reactive_ecodate <- reactive({
+    eco_pie %>%
+      filter(YEAR_ >= input$date_range_eco[1] & YEAR_ <= input$date_range_eco[2])
   })
   
   ########################cause plot###########################
@@ -244,22 +262,12 @@ server <- function(input, output, session) {
     }})
   
   
-  #Make plot based on cause
-  output$causePlot <- renderPlot({
-    
-    # draw the plot with the specified cause
-    ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000))+
-      geom_col(fill = "firebrick1", colour = "firebrick4")+
-      theme_classic()+
-      scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
-      scale_y_continuous(expand = c(0,0), limit = c(0, 510))+
-      labs(y = "Fire Size (Thousands of Acres)", x = "Year")
-  })
-  
-  
+
   
   ############################Value Boxes######################
-  
+ 
+### Value boxes for map  
+   
   #valuebox 1: count of fires within the selection range
   output$count <- renderValueBox(
     valueBox(
@@ -279,6 +287,26 @@ server <- function(input, output, session) {
     )
   )
   
+### Value boxes for pie chart
+    
+  #valuebox 3: count of fires within the selection eco region date range
+  output$count_pie <- renderValueBox(
+    valueBox(
+      paste0(nrow(reactive_ecodate())), 
+      "Number of Fires", 
+      color = "red"
+    )
+  )
+  
+  #valuebox 4: summing acres withing selection range
+  output$acres_pie <- renderValueBox(
+    valueBox(
+      paste0(round(sum(reactive_ecodate()$GIS_ACRES)/10000),1), 
+      "Total Area Burned (Thousands of Acres)", 
+      color = "red", 
+      icon = icon("fas fa-fire",lib='font-awesome')
+    )
+  )
   
   
   #######################maps and data table##################
@@ -327,12 +355,37 @@ server <- function(input, output, session) {
       ) 
   })
   
-#reactive pie chart
-  output$pie <- renderPlotly({plot_ly(reactive_region(), labels = ~Region, values = ~GIS_ACRES, type = 'pie') %>%
-    layout(title = 'Acres Burned',
-           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+###############################reactive pie chart##################################
+  
+  ecocolors <- c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)', 'rgb(112,128,144)')
+  
+  output$pie <- renderPlotly({
+    plot_ly(reactive_ecodate(),
+            labels = ~Region, 
+            values = ~GIS_ACRES, 
+            type = 'pie',
+           # marker = list(color = c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)','rgb(112,128,144)'))) %>% 
+           marker = list(colors = ecocolors)) %>%
+      layout(legend = list(orientation = 'h')) %>% 
+    layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
            yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    
 })
+
+#####################################reactive bar chart######################################
+  #Make plot based on cause
+  output$causePlot <- renderPlot({
+    
+    # draw the plot with the specified cause
+    ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000))+
+      geom_col(fill = "firebrick1", colour = "firebrick4", width = 5)+
+      theme_classic()+
+      scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
+      scale_y_continuous(expand = c(0,0), limit = c(0, 510))+
+      labs(y = "Fire Size (Thousands of Acres)", x = "Year")
+  })
+  
+  
 }
 
 # Run the application 
