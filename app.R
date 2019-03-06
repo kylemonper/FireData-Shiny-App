@@ -195,8 +195,7 @@ body <- dashboardBody(
                             h5("caption and source"))),
             column(8,
                    fluidRow(width = 12,
-                            box(background = "black",
-                                title = "Description of how to use the app.."))
+                            box(title = "Description of how to use the app.."))
             ))))))
 
 ui <- dashboardPage(header, sidebar, body)
