@@ -34,8 +34,18 @@ library(plotly)
 #select top 100 fires 
 top100 <- fire %>% 
   select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
+<<<<<<< HEAD
   arrange(-GIS_ACRES) %>% 
   head(1000) %>% 
+=======
+  arrange(-GIS_ACRES)
+
+#fix years as numeric
+top100$YEAR_ <- unfactor(top100$YEAR_)
+
+#define cause codes
+top100 <- top100[1:1000,] %>% 
+>>>>>>> 5d8577e512e99725768fa633723c1bb3c21518e9
   mutate(CAUSE = case_when(
     CAUSE == 1 ~ "Lightning",
     CAUSE == 2 ~ "Equipment Use",
@@ -115,12 +125,12 @@ sidebar <- dashboardSidebar(
               label = "Cause of Fire", 
               choices = c(sort(unique(top100$CAUSE)),'All')),
   
-  #eco slider for year selection
-  sliderInput("date_range_eco",               
-              label = "Select Date for Pie Chart", 
-              min = min(eco_pie$YEAR_), 
-              max = max(eco_pie$YEAR_),
-              value = range(eco_pie$YEAR_),
+  #eco slider for number of fires selection
+  sliderInput("fire_count",               
+              label = "Select Number of Fires (Largest - Smallest)", 
+              min = 1, 
+              max = 1000,
+              value = 1000,
               step = 1,
               sep = "",
               width = 400),
@@ -160,7 +170,8 @@ body <- dashboardBody(
               column(width = 8,
                      box(background = "black",
                          width = 12,
-                         leafletOutput("map", height = 700, width = 600)),
+                         height = 500,
+                         leafletOutput("map", height = 500, width = 600)),
                      box(width = 12,
                          dataTableOutput('dto', width = 600))),
                      
@@ -201,8 +212,7 @@ body <- dashboardBody(
                             h5("caption and source"))),
             column(8,
                    fluidRow(width = 12,
-                            box(background = "black",
-                                title = "Description of how to use the app.."))
+                            box(title = "Description of how to use the app.."))
             ))))))
 
 ui <- dashboardPage(header, sidebar, body)
@@ -237,9 +247,10 @@ server <- function(input, output, session) {
  # })
   
   # Date slider for eco region
- reactive_ecodate <- reactive({
+ reactive_firecount <- reactive({
     eco_pie %>%
-      filter(YEAR_ >= input$date_range_eco[1] & YEAR_ <= input$date_range_eco[2])
+     arrange(GIS_ACRES) %>% 
+      head(input$fire_count)
   })
   
   ########################cause plot###########################
@@ -358,7 +369,7 @@ server <- function(input, output, session) {
   ecocolors <- c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)', 'rgb(112,128,144)')
   
   output$pie <- renderPlotly({
-    plot_ly(reactive_ecodate(),
+    plot_ly(reactive_firecount(),
             labels = ~Region, 
             values = ~GIS_ACRES, 
             type = 'pie',
