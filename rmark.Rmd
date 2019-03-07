@@ -24,6 +24,7 @@ require(sp)
 require(rgdal)
 require(maps)
 
+#testing
 
 fire <- st_read("Fire_Output.shp")
 

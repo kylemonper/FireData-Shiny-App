@@ -34,13 +34,8 @@ library(plotly)
 #select top 100 fires 
 top100 <- fire %>% 
   select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
-  arrange(-GIS_ACRES)
-
-#fix years as numeric
-top100$YEAR_ <- unfactor(top100$YEAR_)
-
-#define cause codes
-top100 <- top100[1:1000,] %>% 
+  arrange(-GIS_ACRES) %>% 
+  head(10) %>% 
   mutate(CAUSE = case_when(
     CAUSE == 1 ~ "Lightning",
     CAUSE == 2 ~ "Equipment Use",
@@ -52,7 +47,12 @@ top100 <- top100[1:1000,] %>%
     CAUSE == 10 ~ "Vehicle",
     CAUSE == 11 ~ "Power Line",
     CAUSE == 14 ~ "Unknown/Unidentified"
-  )) 
+  )) %>% 
+  arrange(YEAR_)
+
+top100$YEAR_ <- unfactor(top100$YEAR_)
+
+
 
 #simplify polygons
 top100 <- top100 %>% 
@@ -115,7 +115,7 @@ sidebar <- dashboardSidebar(
   #select Causes
   selectInput(inputId = "cause",        
               label = "Cause of Fire", 
-              choices = c(sort(unique(top100$CAUSE)),'All')),
+              choices = "All", c(sort(unique(top100$CAUSE)))),
   
   #eco slider for number of fires selection
   sliderInput("fire_count",               
@@ -132,26 +132,6 @@ menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'),
          href = "https://github.com/kylemonper/FireData-Shiny-App"))
 
 
-  
-  #ECO CHECKBOX - OLD CODE
-#  checkboxGroupInput("checkRegion",
-    #                 label = "Select Eco-Region",
-     #                choices = list("Cascades" = "Cascades",
-      #                              "Central Basin and Range" = "Central Basin and Range",
-           #                         "Central California Foothills and Coastal Mountains" = "Central California Foothills and Coastal Mountains",
-#                                    "Central California Valley" = "Central California Valley",
- #                                   "Eastern Cascades Slopes and Foothills" = "Eastern Cascades Slopes and Foothills",
-           #                         "Klamath Mountains/California High North Coast Range" = "Klamath Mountains/California High North Coast Range",
-                     #               "Mojave Basin and Range" = "Mojave Basin and Range",
-                      #              "Northern Basin and Range" = "Northern Basin and Range",
-                       #             "Sierra Nevada" = "Sierra Nevada",
-                        #            "Sonoran Basin and Range" = "Sonoran Basin and Range",
-                         #           "Southern California Mountains" = "Southern California Mountains",
-                          #          "Southern California/Northern Baja Coast" = "Southern California/Northern Baja Coast"),
-              #       selected = eco$Region)
-# )
-
-
 ##### Designing the dashboard Body Layout
 
 body <- dashboardBody(
@@ -165,7 +145,9 @@ body <- dashboardBody(
                          height = 500,
                          leafletOutput("map", height = 500, width = 600)),
                      box(width = 12,
-                         dataTableOutput('dto', width = 600))),
+                         background = "black",
+                         title = "Acres Burned by Eco-Region",
+                         plotlyOutput("pie", height = 600, width = 600))),
                      
               #second column with graphs and info boxes
               column(4,
@@ -175,22 +157,11 @@ body <- dashboardBody(
                                   background = "black",
                                   solidHeader = TRUE,
                                   valueBoxOutput("count", width = 4),
-                                  valueBoxOutput("acres", width = 8)),
-                              box(width = 12,
-                                  title = "Quick Stats for Pie Chart", 
-                                  background = "black",
-                                  solidHeader = TRUE,
-                                  valueBoxOutput("count_pie", width = 4),
-                                  valueBoxOutput("acres_pie", width = 8))),
+                                  valueBoxOutput("acres", width = 8))),
                      box(width = 14,
                          background = "black",
                          title = "Acres Burned by Cause",
-                         plotOutput("causePlot")),
-              
-                     box(width = 14,
-                         background = "black",
-                         title = "Acres Burned by Eco-Region",
-                  plotlyOutput("pie", height = 600, width = 300))
+                         plotOutput("causePlot"))
                   )))),
    #About tab
     tabItem(tabName = "about",
@@ -288,26 +259,7 @@ server <- function(input, output, session) {
     )
   )
   
-### Value boxes for pie chart
-    
-  #valuebox 3: count of fires within the selection eco region date range
-  output$count_pie <- renderValueBox(
-    valueBox(
-      paste0(nrow(reactive_ecodate())), 
-      "Number of Fires", 
-      color = "red"
-    )
-  )
-  
-  #valuebox 4: summing acres withing selection range
-  output$acres_pie <- renderValueBox(
-    valueBox(
-      paste0(round(sum(reactive_ecodate()$GIS_ACRES)/10000),1), 
-      "Total Area Burned (Thousands of Acres)", 
-      color = "red", 
-      icon = icon("fas fa-fire",lib='font-awesome')
-    )
-  )
+
   
   
   #######################maps and data table##################
@@ -378,11 +330,11 @@ server <- function(input, output, session) {
   output$causePlot <- renderPlot({
     
     # draw the plot with the specified cause
-    ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000))+
-      geom_col(fill = "firebrick1", colour = "firebrick4", width = 5)+
+    ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000)) +
+      geom_col(position = position_stack(), fill = "firebrick3") +
       theme_classic()+
       scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
-      scale_y_continuous(expand = c(0,0), limit = c(0, 510))+
+      scale_y_continuous(expand = c(0,0), limit = c(0, 1000))+
       labs(y = "Fire Size (Thousands of Acres)", x = "Year")
   })
   
