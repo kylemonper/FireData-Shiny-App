@@ -218,12 +218,34 @@ eco_pie_df <- st_set_geometry(eco_intersect, NULL)
 
 eco_pie <- data.frame("Categorie"=rownames(eco_pie_df), eco_pie_df)
 
+eco_pie2 <- eco_pie %>% 
+  group_by(Region) %>% 
+  mutate(volume = sum(GIS_ACRES)) %>% 
+  mutate(share = volume/sum(volume)*100) %>% 
+  arrange(desc(volume))
+
 pie <- plot_ly(eco_pie, labels = ~Region, values = ~GIS_ACRES, type = 'pie') %>%
   layout(title = 'Acres Burned',
          xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
 
 pie
+
+# Trying pie chart with ggplot - may be easier to customize colors this way
+
+ggpie <- ggplot(eco_pie2, aes(x = "", y = GIS_ACRES, fill = Region)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y") +
+  geom_text(aes(label = paste0(round(share), "%")),
+            position = position_stack(vjust = 0.5)) +
+  labs(x = NULL, y = NULL, fill = NULL) +
+  scale_fill_manual(values = c("yellow4", "wheat4", "tomato3", "olivedrab", "steelblue4", "indianred3", "sienna3", "rosybrown4", "orange4", "lightgoldenrod4", "goldenrod4", "cadetblue4")) +
+  theme_classic() +
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank())
+ggpie
+
 
 ```
 
