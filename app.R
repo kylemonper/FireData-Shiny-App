@@ -34,13 +34,8 @@ library(plotly)
 #select top 100 fires 
 top100 <- fire %>% 
   select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
-  arrange(-GIS_ACRES)
-
-#fix years as numeric
-top100$YEAR_ <- unfactor(top100$YEAR_)
-
-#define cause codes
-top100 <- top100[1:100,] %>% 
+  arrange(-GIS_ACRES) %>% 
+  head(1000) %>% 
   mutate(CAUSE = case_when(
     CAUSE == 1 ~ "Lightning",
     CAUSE == 2 ~ "Equipment Use",
@@ -52,7 +47,10 @@ top100 <- top100[1:100,] %>%
     CAUSE == 10 ~ "Vehicle",
     CAUSE == 11 ~ "Power Line",
     CAUSE == 14 ~ "Unknown/Unidentified"
-  )) 
+  )) %>% 
+  arrange(YEAR_)
+
+top100$YEAR_ <- unfactor(top100$YEAR_)
 
 #simplify polygons
 top100 <- top100 %>% 
@@ -377,11 +375,11 @@ server <- function(input, output, session) {
   output$causePlot <- renderPlot({
     
     # draw the plot with the specified cause
-    ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000))+
-      geom_col(fill = "firebrick1", colour = "firebrick4", width = 5)+
+    ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000)) +
+      geom_col(position = position_stack()) +
       theme_classic()+
       scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
-      scale_y_continuous(expand = c(0,0), limit = c(0, 510))+
+      scale_y_continuous(expand = c(0,0), limit = c(0, 1000))+
       labs(y = "Fire Size (Thousands of Acres)", x = "Year")
   })
   
