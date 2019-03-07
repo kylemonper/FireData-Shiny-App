@@ -211,7 +211,7 @@ top100 <- merge(top100, centroid_less, by = "GIS_ACRES")
 ```{r}
 # Eco region wrangling and pie-chart
 eco_intersect <- eco %>% 
-  st_intersection(top100)
+  st_intersection(centroid)
 
 eco_pie_df <- st_set_geometry(eco_intersect, NULL)
 
@@ -229,6 +229,19 @@ pie
 ```
 
 
+```{r}
+#Experiementing with Fire Causes plot:
+
+  ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000))+
+      geom_col(fill = "firebrick1", colour = "firebrick4", width = 5, position = "stack")+
+      theme_classic()+
+      scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
+      scale_y_continuous(expand = c(0,0), limit = c(0, 510))+
+      labs(y = "Fire Size (Thousands of Acres)", x = "Year")
+
+
+
+```
 
 
 
