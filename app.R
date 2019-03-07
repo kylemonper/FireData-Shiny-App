@@ -142,12 +142,13 @@ body <- dashboardBody(
               column(width = 8,
                      box(background = "black",
                          width = 12,
-                         height = 500,
-                         leafletOutput("map", height = 500, width = 600)),
+                         height = 525,
+                         leafletOutput("map", height = 500, width = 625)),
                      box(width = 12,
+                         height = 700,
                          background = "black",
-                         title = "Acres Burned by Eco-Region",
-                         plotlyOutput("pie", height = 600, width = 600))),
+                         title = "Proportion of Fires by Eco-Region (Largest - Smallest",
+                         plotlyOutput("pie", height = 600, width = 625))),
                      
               #second column with graphs and info boxes
               column(4,
@@ -167,15 +168,18 @@ body <- dashboardBody(
     tabItem(tabName = "about",
             h2("About", 
               fluidRow(
-                column(width = 4,
-                        box(width = 9,
+                column(width = 3,
+                        box(width = 12,
                             tags$img(src='justin_sullivan_getty_images.jpg', height=150, width=175),
                             h5("A firefighter monitoring the Mendocino Complex fire on Aug. 7, 2018. Justin Sullivan/Getty Images"),
                             tags$img(src='thomas_fire.jpg', height=150, width=175),
                             h5("caption and source"))),
             column(8,
-                   fluidRow(width = 12,
-                            box(title = "Description of how to use the app.."))
+                   fluidRow(width = 9,
+                            box(width = 12,
+                                title = tags$title("Welcome to Playing with Fire...Data")
+                                )
+                            )
             ))))))
 
 ui <- dashboardPage(header, sidebar, body)
@@ -321,7 +325,9 @@ server <- function(input, output, session) {
            marker = list(colors = ecocolors)) %>%
       layout(legend = list(orientation = 'h')) %>% 
     layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+           legend = list(x = 1, y = 100))
+      
     
 })
 
