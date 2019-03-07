@@ -40,7 +40,7 @@ top100 <- fire %>%
 top100$YEAR_ <- unfactor(top100$YEAR_)
 
 #define cause codes
-top100 <- top100[1:100,] %>% 
+top100 <- top100[1:1000,] %>% 
   mutate(CAUSE = case_when(
     CAUSE == 1 ~ "Lightning",
     CAUSE == 2 ~ "Equipment Use",
