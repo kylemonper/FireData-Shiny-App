@@ -32,7 +32,7 @@ top100 <- top100[1:10,]
 ui <- fluidPage(
   sidebarLayout(
                 mainPanel(
-                          dataTableOutput('dto', width = 800)),
+                  plotOutput("causePlot")),
                            
                  sidebarPanel( 
                   uiOutput("date"),
