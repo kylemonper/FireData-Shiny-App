@@ -16,10 +16,7 @@ library(plotly)
 #####to do list#####
 # must do:
 # - Pie chart - customize colors CAMILA
-# - Quick stats for pie chart are incorrect - CAMILA with help from JENNY & KYLE?
-# - Fill out the 'about section' - CAMILA to draft, JENNY & KYLE to edit
 # - Bar chart - fix wrangling and make each cause different color JENNY wit KYLE help? 
-
 
 #cool to do
 # - make data table reactive - KYLE
