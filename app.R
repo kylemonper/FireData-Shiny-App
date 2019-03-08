@@ -88,6 +88,8 @@ eco_pie_df <- st_set_geometry(eco_intersect, NULL)
 
 eco_pie <- data.frame("Categorie"=rownames(eco_pie_df), eco_pie_df)
 
+eco_pie2 <- eco_pie[, c('Region', 'GIS_ACRES')]
+
 ##############################################################################
 # UI
 ##############################################################################
@@ -215,7 +217,7 @@ server <- function(input, output, session) {
   
   # Date slider for eco region
  reactive_firecount <- reactive({
-    eco_pie %>%
+    eco_pie2 %>%
      arrange(GIS_ACRES) %>% 
       head(input$fire_count)
   })
