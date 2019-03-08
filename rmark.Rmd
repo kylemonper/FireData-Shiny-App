@@ -157,9 +157,9 @@ eco_intersect <- eco %>%
 
 eco_pie_df <- st_set_geometry(eco_intersect, NULL)
 
-eco_pie <- data.frame("Region"=rownames(eco_pie_df), eco_pie_df)
+eco_pie <- data.frame(eco_pie_df)
   
-eco_pie2 <- eco_pie[, c('Region', 'GIS_ACRES')]
+#eco_pie2 <- eco_pie[, c('Region', 'GIS_ACRES')]
 
 #mapcolours <- data.frame(x = c("Cascades","Central Basin and Range","Central California Foothills and Coastal Mountains","Central California Valley", "Eastern Cascades Slopes and Foothills","Klamath Mountains/California High North Coast Range","Mojave Basin and Range","Northern Basin and Range","Sierra Nevada","Sonoran Basin and Range","Southern California Mountains","Southern California Mountains","Southern California/Northern Baja Coast"),
  #                       colours = c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)','rgb(112,128,144)','rgb(112,128,144)'),
