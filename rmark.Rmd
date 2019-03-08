@@ -161,14 +161,32 @@ eco_pie <- data.frame(eco_pie_df)
   
 #eco_pie2 <- eco_pie[, c('Region', 'GIS_ACRES')]
 
-#mapcolours <- data.frame(x = c("Cascades","Central Basin and Range","Central California Foothills and Coastal Mountains","Central California Valley", "Eastern Cascades Slopes and Foothills","Klamath Mountains/California High North Coast Range","Mojave Basin and Range","Northern Basin and Range","Sierra Nevada","Sonoran Basin and Range","Southern California Mountains","Southern California Mountains","Southern California/Northern Baja Coast"),
+#mapcolours <- data.frame(x = c("Cascades","Central Basin and Range","Central California Foothills and Coastal Mountains","Central California Valley", "Eastern Cascades Slopes and Foothills","Klamath Mountains/California High North Coast Range","Mojave Basin and Range","Northern Basin and Range","Sierra Nevada","Sonoran Basin and Range","Southern California Mountains", "Southern California/Northern Baja Coast"),
  #                       colours = c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)','rgb(112,128,144)','rgb(112,128,144)'),
   #                      stringsAsFactors = FALSE)
 
 
-colors <- c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)','rgb(112,128,144)','rgb(112,128,144)')
+#color_map <- c(Cascades ="rgb(70,130,180)", 
+ #              Central Basin and Range ="rgb(46,139,87)", 
+  #             Central California Foothills and Coastal Mountains="rgb(128,128,0)", 
+   #            Central California Valley = "rgb(0,128,128)", 
+    #           Eastern Cascades Slopes and Foothills = "rgb(222,184,135)",
+     #          Klamath Mountains/California High North Coast Range = "rgb(188,143,143)", 
+      #         Mojave Basin and Range="rgb(184,134,11)", 
+       #        Northern Basin and Range="rgb(160,82,45)", 
+        #       Sierra Nevada="rgb(105,105,105)", 
+         #      Sonoran Basin and Range = "rgb(47,79,79)", 
+          #     Southern California Mountains = "rgb(112,128,144)", 
+           #    Southern California/Northern Baja Coast = "rgb(112,128,144)")
 
-pie <- plot_ly(eco_pie, labels = ~Region, values = ~GIS_ACRES, type = 'pie', marker = list(color = colors)) %>% 
+colors<-c("#ff0000","#ff1919","#ff3232","#ff4c4c","#ff6666",
+          "#ff7f7f","#ff9999","#ffb2b2","#ffcccc","#ffe5e5")
+
+#ecocolors <- c("rgb(70,130,180)", "rgb(46,139,87)", "rgb(128,128,0)", "rgb(0,128,128)", "rgb(222,184,135)","rgb(188,143,143)", "rgb(184,134,11)", "rgb(160,82,45)", "rgb(105,105,105)", "rgb(47,79,79)","rgb(112,128,144)", "rgb(112,128,144)")
+
+ecocolors <- c("#cccccc", "#cccc99", "#cccc00", "#ffcc33", "#ffcc33","#ffcc33	", "#ffcc33", "#ffcc33", "#cc99cc", "#ffcc33","#ffcc33", "#ffcc33")
+
+pie <- plot_ly(eco_pie, labels = ~Region, values = ~GIS_ACRES, type = 'pie', marker = list(colors = ecocolors)) %>% 
                layout(title = 'Acres Burned',
                       xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                       yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
