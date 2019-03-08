@@ -20,8 +20,6 @@ library(plotly)
 
 #cool to do
 # - make data table reactive - KYLE
-#set default of causeplot to "All", make it reactive with map - JENNY with KYLE help?
-
 
 ##############################################################################
 # Wrangling
@@ -144,21 +142,21 @@ body <- dashboardBody(
                      box(width = 12,
                          height = 700,
                          background = "black",
-                         title = "Proportion of Fires by Eco-Region (Largest - Smallest",
+                         title = strong("Proportion of Fires by Eco-Region (Largest - Smallest)"),
                          plotlyOutput("pie", height = 600, width = 625))),
                      
               #second column with graphs and info boxes
               column(4,
                      fluidRow(width = 4,
                               box(width = 12,
-                                  title = "Quick Stats for Map", 
+                                  title = strong("Quick Stats for Map"), 
                                   background = "black",
                                   solidHeader = TRUE,
                                   valueBoxOutput("count", width = 4),
                                   valueBoxOutput("acres", width = 8))),
                      box(width = 14,
                          background = "black",
-                         title = "Acres Burned by Cause",
+                         title = strong("Acres Burned by Cause", align = "center"),
                          plotOutput("causePlot"))
                   )))),
    #About tab
