@@ -30,7 +30,7 @@ library(plotly)
 top100 <- fire %>% 
   dplyr::select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
   arrange(-GIS_ACRES) %>% 
-  head(10) %>% 
+  head(1000) %>% 
   mutate(CAUSE = case_when(
     CAUSE == 1 ~ "Lightning",
     CAUSE == 2 ~ "Equipment Use",
@@ -222,7 +222,7 @@ server <- function(input, output, session) {
   reactive_date <- reactive({
     top100 %>%
       filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
-      head(1000)
+      head(input$fire_count)
   })
   
   #working on universal reactivity
@@ -247,6 +247,7 @@ server <- function(input, output, session) {
   #Slider for eco region
  reactive_firecount <- reactive({
     eco_pie %>%
+     filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
      arrange(GIS_ACRES) %>% 
       head(input$fire_count)
   })
@@ -256,6 +257,7 @@ server <- function(input, output, session) {
   reactive_cause<- reactive({
     if(input$cause == 'All') 
     {top100 %>% 
+        filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
         group_by(YEAR_) %>%
         summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
         mutate(acres_burn_tot_1000 = acres_burn_tot/1000) 
@@ -263,9 +265,11 @@ server <- function(input, output, session) {
     
     else {top100 %>%
         filter(CAUSE == input$cause) %>% 
+        filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
         group_by(YEAR_) %>%
         summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
-        mutate(acres_burn_tot_1000 = acres_burn_tot/1000)
+        mutate(acres_burn_tot_1000 = acres_burn_tot/1000) %>% 
+        head(input$fire_count)
     }})
   
   
