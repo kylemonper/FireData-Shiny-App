@@ -198,7 +198,7 @@ body <- dashboardBody(
                                 tags$ul(
                                   tags$li("select a date range for the map and explore fire perimeters across the state;"),
                                   tags$li("select a cause of fire and have a look at acres burned over time;"), 
-                                  tags$li("select the number of fires to include in the pie chart and view the proportion of fires in each Ecoregion. In this widget, 1 represents the largest fire in the state’s history and 1000 represents the smallest (of fires shown in this app).")),
+                                  tags$li("select the number of fires to include in the pie chart and view the proportion of fires in each Ecoregion. In this widget, 1 represents the largest fire in the state’s history and 1000 represents the smallest (of fires shown in this app). Note that a single fire can occur in multiple Ecoregions.")),
                                   tags$p("The Quick Stats box summarizes the fires displayed on the map based on date range selection."),
                                   tags$p(strong("Data Sources"), align = "left"),
                                   tags$ul(
