@@ -113,7 +113,7 @@ sidebar <- dashboardSidebar(
   
   #map slider for year selection
   sliderInput("date_range",               
-              label = "Select Date for Map", 
+              label = "Select Date", 
               min = min(top100$YEAR_), 
               max = max(top100$YEAR_),
               value = range(top100$YEAR_),
@@ -162,7 +162,7 @@ body <- dashboardBody(
               column(4,
                      fluidRow(width = 4,
                               box(width = 12,
-                                  title = strong("Quick Stats for Map"), 
+                                  title = strong("Quick Stats"), 
                                   background = "black",
                                   solidHeader = TRUE,
                                   valueBoxOutput("count", width = 4),
@@ -375,7 +375,7 @@ server <- function(input, output, session) {
       theme_classic()+
       scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
       scale_y_continuous(expand = c(0,0), limit = c(0, 1000))+
-      labs(y = "Fire Size (Thousands of Acres)", x = "Year")
+      labs(y = "Acres Burned (Thousands of Acres)", x = "Year")
   })
   
   output$ecoMap <- renderPlot({
