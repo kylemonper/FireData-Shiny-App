@@ -94,12 +94,15 @@ header <- dashboardHeader(title = "Playing With Fire...Data", titleWidth = 250)
 
 ####### Sidebar
 sidebar <- dashboardSidebar(
+  
   #side bar tabs: 
-  sidebarMenu(
+  sidebarMenu(width = 2,
+    style = "position: fixed;width:14%;",
     menuItem("About", tabName = "about", icon = icon("fab fa-info-circle",lib='font-awesome')),
     menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"), selected = TRUE),
-    id = "tabs"
-  ),
+    id = "tabs",
+ 
+  
   #map slider for year selection
   sliderInput("date_range",               
               label = "Select Date for Map", 
@@ -112,7 +115,7 @@ sidebar <- dashboardSidebar(
   #select Causes
   selectInput(inputId = "cause",        
               label = "Cause of Fire", 
-              choices = "All", c(sort(unique(top100$CAUSE)))),
+              choices = c("All", c(sort(unique(top100$CAUSE))))),
   
   #eco slider for number of fires selection
   sliderInput("fire_count",               
@@ -126,7 +129,7 @@ sidebar <- dashboardSidebar(
 
 #Get Source Code tab
 menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
-         href = "https://github.com/kylemonper/FireData-Shiny-App"))
+         href = "https://github.com/kylemonper/FireData-Shiny-App")))
 
 
 ##### Designing the dashboard Body Layout
@@ -207,7 +210,8 @@ server <- function(input, output, session) {
   #create new reactive df based on slider date inpute in the ui
   reactive_date <- reactive({
     top100 %>%
-      filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2])
+      filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
+      head(1000)
   })
   
   #working on universal reactivity
