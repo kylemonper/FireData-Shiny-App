@@ -76,6 +76,8 @@ eco <- st_read("ca_eco.shp") %>%
   st_simplify(dTolerance = 100) %>% # Simplify polygons so maps don't take forever to load
   st_transform(crs = 4326)
 
+
+
 eco_intersect <- eco %>% 
   st_intersection(top100)
 
@@ -175,6 +177,7 @@ body <- dashboardBody(
                          background = "black",
                          title = strong("Map of California Ecoregions", align = "center"),
                          plotOutput("ecoMap"))
+
                   )))),
    #About tab
     tabItem(tabName = "about", 
@@ -189,13 +192,13 @@ body <- dashboardBody(
                    fluidRow(width = 9,
                             box(width = 12,
                                 h3(strong("Welcome to Playing with Fire...Data", align = "center")),
-                                tags$p("Visually explore the top 1000 fires in the last 128 years of California’s fire history. See where fires have occurred in the state over different time frames, which Ecoregions have had the biggest fires, and how total acres burned varies among different causal mechanisms."),
+                                tags$p("Visually explore the top 1000 fires in the last 140 years of California’s fire history. See where fires have occurred in the state over different time frames, which Ecoregions have had the biggest fires, and how total acres burned varies among different causal mechanisms."),
                                 tags$p("Use the widgets on the left hand side of the dashboard to:
 "),
                                 tags$ul(
                                   tags$li("select a date range for the map and explore fire perimeters across the state;"),
                                   tags$li("select a cause of fire and have a look at acres burned over time;"), 
-                                  tags$li("select the number of fires to include in the pie chart and view the proportion of fires in each Ecoregion. In this widget, 1 represents the largest fire in the state’s history and 1000 represents the smallest (of fires shown in this app).")),
+                                  tags$li("select the number of fires to include in the pie chart and view the proportion of fires in each Ecoregion. In this widget, 1 represents the largest fire in the state’s history and 1000 represents the smallest (of fires shown in this app). Note that a single fire can occur in multiple Ecoregions.")),
                                   tags$p("The Quick Stats box summarizes the fires displayed on the map based on date range selection."),
                                   tags$p(strong("Data Sources"), align = "left"),
                                   tags$ul(
@@ -356,7 +359,6 @@ server <- function(input, output, session) {
     
     plot_ly(reactive_firecount(),
             labels = ~Region, 
-            values = ~GIS_ACRES, 
             type = 'pie',
            # marker = list(color = c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)','rgb(112,128,144)'))) %>% 
            marker = list(colors = ecocolors)) %>%
@@ -396,6 +398,8 @@ server <- function(input, output, session) {
    #   geom_label_repel(data = eco, )
       
   })
+  
+  
   
   
 }
