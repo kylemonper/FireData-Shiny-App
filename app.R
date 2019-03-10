@@ -194,12 +194,16 @@ server <- function(input, output, session) {
       filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2])
   })
   
-  #Do the same ^ for the table, but drop the geometry for the sake of displaying rows
-  table <- reactive({
-    top100 %>%
-      filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
-      st_drop_geometry(.)
-  })
+  #working on universal reactivity
+  # reactive_date <- reactive({
+  #   if (is.na(input$cause)){
+  #     top100
+  #   } 
+  #   else (
+  #     top100 %>% 
+  #       filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2] & CAUSE == input$cause)
+  #   )
+  # })
   
   ########################eco pie##############################
   
@@ -313,6 +317,8 @@ server <- function(input, output, session) {
   ecocolors <- c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)', 'rgb(112,128,144)')
   
   output$pie <- renderPlotly({
+    
+    
     plot_ly(reactive_firecount(),
             labels = ~Region, 
             values = ~GIS_ACRES, 
@@ -326,6 +332,7 @@ server <- function(input, output, session) {
 })
 
 #####################################reactive bar chart######################################
+  
   #Make plot based on cause
   output$causePlot <- renderPlot({
     
