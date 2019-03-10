@@ -206,3 +206,29 @@ pie
      # labs(y = "Fire Size (Thousands of Acres)", x = "Year")
 
 ```
+
+```{r}
+#Ecomap
+
+eco_center <- st_centroid(eco)
+
+eco_map <- eco_center %>% 
+  mutate(lat = unlist(map(eco_center$geometry, 1)),
+         long = unlist(map(eco_center$geometry, 2)))
+
+color_count <- 13
+my_colors <- colorRampPalette(brewer.pal(10, "Set2"))(color_count)
+
+ggplot(eco) +
+    geom_sf(aes(fill = Region),
+            color = "NA",
+            size = 0.1,
+            show.legend = FALSE) +
+      scale_fill_manual(values = my_colors) +
+      theme_classic() +
+      coord_sf(datum = NA) +
+      geom_label_repel(data = eco_map, aes(x = lat, y = long, label = Region))+
+      labs(x = "", y = "")
+
+```
+

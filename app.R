@@ -28,7 +28,7 @@ library(plotly)
 
 #select top 100 fires 
 top100 <- fire %>% 
-  select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
+  dplyr::select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
   arrange(-GIS_ACRES) %>% 
   head(10) %>% 
   mutate(CAUSE = case_when(
@@ -58,7 +58,7 @@ centroid <- st_centroid(top100)
 centroid_less <- centroid %>% 
   mutate(lat = unlist(map(centroid$geometry,1)),
          long = unlist(map(centroid$geometry,2))) %>% 
-  select(GIS_ACRES, lat, long) %>% 
+  dplyr::select(GIS_ACRES, lat, long) %>% 
   st_drop_geometry()
 top100 <- merge(top100, centroid_less, by = "GIS_ACRES") %>% 
   arrange(YEAR_)
@@ -82,6 +82,16 @@ eco_intersect <- eco %>%
 eco_pie_df <- st_set_geometry(eco_intersect, NULL)
 
 eco_pie <- data.frame(eco_pie_df)
+
+#wrangling for ecoregion map
+eco_center <- st_centroid(eco)
+
+eco_map <- eco_center %>% 
+  mutate(lat = unlist(map(eco_center$geometry, 1)),
+         long = unlist(map(eco_center$geometry, 2)))
+
+color_count <- 13
+my_colors <- colorRampPalette(brewer.pal(10, "Set2"))(color_count) # customize color palette if you need more.
 
 ##############################################################################
 # UI
@@ -157,7 +167,11 @@ body <- dashboardBody(
                      box(width = 14,
                          background = "black",
                          title = strong("Acres Burned by Cause", align = "center"),
-                         plotOutput("causePlot"))
+                         plotOutput("causePlot")),
+                     box(width = 14,
+                         background = "black",
+                         title = strong("Map of California Ecoregions", align = "center"),
+                         plotOutput("ecoMap"))
                   )))),
    #About tab
     tabItem(tabName = "about", 
@@ -358,6 +372,21 @@ server <- function(input, output, session) {
       scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
       scale_y_continuous(expand = c(0,0), limit = c(0, 1000))+
       labs(y = "Fire Size (Thousands of Acres)", x = "Year")
+  })
+  
+  output$ecoMap <- renderPlot({
+    ggplot(eco) +
+    geom_sf(aes(fill = Region),
+            color = "NA",
+            size = 0.1) +
+      scale_fill_manual(values = my_colors) +
+      theme_classic() +
+      theme(legend.position = "bottom") +
+      coord_sf(datum = NA) 
+#      geom_label_repel(data = eco_map, aes(x = lat, y = long, label = Region))+
+ #     labs(x = "", y = "")
+   #   geom_label_repel(data = eco, )
+      
   })
   
   
