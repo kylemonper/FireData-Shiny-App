@@ -30,7 +30,7 @@ library(plotly)
 top100 <- fire %>% 
   dplyr::select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
   arrange(-GIS_ACRES) %>% 
-  head(10) %>% 
+  head(1000) %>% 
   mutate(CAUSE = case_when(
     CAUSE == 1 ~ "Lightning",
     CAUSE == 2 ~ "Equipment Use",
@@ -75,6 +75,8 @@ eco <- st_read("ca_eco.shp") %>%
   rename(Region = US_L3NAME) %>% 
   st_simplify(dTolerance = 100) %>% # Simplify polygons so maps don't take forever to load
   st_transform(crs = 4326)
+
+
 
 eco_intersect <- eco %>% 
   st_intersection(top100)
@@ -175,6 +177,7 @@ body <- dashboardBody(
                          background = "black",
                          title = strong("Map of California Ecoregions", align = "center"),
                          plotOutput("ecoMap"))
+
                   )))),
    #About tab
     tabItem(tabName = "about", 
@@ -189,7 +192,7 @@ body <- dashboardBody(
                    fluidRow(width = 9,
                             box(width = 12,
                                 h3(strong("Welcome to Playing with Fire...Data", align = "center")),
-                                tags$p("Visually explore the top 1000 fires in the last 128 years of California’s fire history. See where fires have occurred in the state over different time frames, which Ecoregions have had the biggest fires, and how total acres burned varies among different causal mechanisms."),
+                                tags$p("Visually explore the top 1000 fires in the last 140 years of California’s fire history. See where fires have occurred in the state over different time frames, which Ecoregions have had the biggest fires, and how total acres burned varies among different causal mechanisms."),
                                 tags$p("Use the widgets on the left hand side of the dashboard to:
 "),
                                 tags$ul(
@@ -222,7 +225,7 @@ server <- function(input, output, session) {
   reactive_date <- reactive({
     top100 %>%
       filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
-      head(1000)
+      head(input$fire_count)
   })
   
   #working on universal reactivity
@@ -247,6 +250,7 @@ server <- function(input, output, session) {
   #Slider for eco region
  reactive_firecount <- reactive({
     eco_pie %>%
+     filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
      arrange(GIS_ACRES) %>% 
       head(input$fire_count)
   })
@@ -256,6 +260,7 @@ server <- function(input, output, session) {
   reactive_cause<- reactive({
     if(input$cause == 'All') 
     {top100 %>% 
+        filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
         group_by(YEAR_) %>%
         summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
         mutate(acres_burn_tot_1000 = acres_burn_tot/1000) 
@@ -263,9 +268,11 @@ server <- function(input, output, session) {
     
     else {top100 %>%
         filter(CAUSE == input$cause) %>% 
+        filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
         group_by(YEAR_) %>%
         summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
-        mutate(acres_burn_tot_1000 = acres_burn_tot/1000)
+        mutate(acres_burn_tot_1000 = acres_burn_tot/1000) %>% 
+        head(input$fire_count)
     }})
   
   
@@ -352,7 +359,6 @@ server <- function(input, output, session) {
     
     plot_ly(reactive_firecount(),
             labels = ~Region, 
-            values = ~GIS_ACRES, 
             type = 'pie',
            # marker = list(color = c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)','rgb(112,128,144)'))) %>% 
            marker = list(colors = ecocolors)) %>%
@@ -392,6 +398,8 @@ server <- function(input, output, session) {
    #   geom_label_repel(data = eco, )
       
   })
+  
+  
   
   
 }
