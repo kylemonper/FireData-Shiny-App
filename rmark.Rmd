@@ -23,11 +23,18 @@ library(colorspace)
 require(sp)
 require(rgdal)
 require(maps)
+```
 
+```{r}
+# Read in the data
 
 fire <- st_read("Fire_Output.shp")
 
-
+eco <- st_read("ca_eco.shp") %>% 
+  dplyr::select(US_L3NAME) %>% 
+  rename(Region = US_L3NAME) %>% 
+  st_simplify(dTolerance = 100) %>% # Simplify polygons so maps don't take forever to load
+  st_transform(crs = 4326)
 ```
 
 
@@ -63,17 +70,13 @@ top100 <- top100 %>%
   st_simplify(dTolerance = 5000)
 ```
 
-
-
 ```{r}
 #Testing to see if wrangling done in Shiny actually does what its supposed to
-reactive_cause_test<- top100 %>%
+reactive_cause_test <- top100 %>%
       filter(CAUSE == "Miscellaneous") %>% 
       group_by(YEAR_) %>% 
       summarize(acres_burn_tot = sum(GIS_ACRES))
 ```
-
-
 
 ```{r}
 top100 <- st_transform(top100, crs = 4326)
@@ -92,65 +95,14 @@ top100 <- merge(top100, centroid_less, by = "GIS_ACRES")
 ```
 
 ```{r}
-eco <- sf::st_read(".", layer = "ca_eco")
-
-spatialFrame
-inside <- sp::over(centroid$geometry, eco)
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
----
-title: "Shiny_fire"
-author: "Kyle Monper"
-date: "January 24, 2019"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r, message = F}
-library(tidyverse)
-library(sf)
-library(leaflet)
-library(shiny)
-library(plotly)
-library(spData)
-library(varhandle)
-library(RColorBrewer)
-library(colorspace)
-
-fire <- st_read("Fire_Output.shp")
-
-eco <- st_read("ca_eco.shp") %>% 
-  dplyr::select(US_L3NAME) %>% 
-  rename(Region = US_L3NAME) %>% 
-  st_simplify(dTolerance = 100) %>% # Simplify polygons so maps don't take forever to load
-  st_transform(crs = 4326)
-
-```
-
-
-```{r}
 
 top100 <- fire %>% 
   select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
-  arrange(-GIS_ACRES) %>% 
-  head(1000) %>% 
+  arrange(-GIS_ACRES)
+
+top100$YEAR_ <- unfactor(top100$YEAR_)
+
+top100 <- top100[1:100,] %>% 
   mutate(CAUSE = case_when(
     CAUSE == 1 ~ "Lightning",
     CAUSE == 2 ~ "Equipment Use",
@@ -164,18 +116,13 @@ top100 <- fire %>%
     CAUSE == 14 ~ "Unknown/Unidentified"
   )) %>% 
   arrange(YEAR_)
-
-top100$YEAR_ <- unfactor(top100$YEAR_)
-
-top100 <- st_transform(top100, crs = 4326)
 ```
 
 try this for simplifying the polygons
 ```{r}
 top100 <- top100 %>% 
-  st_simplify(dTolerance = 100)
+  st_simplify(dTolerance = 5000)
 ```
-
 
 ```{r}
 #Testing to see if wrangling done in Shiny actually does what its supposed to
@@ -184,8 +131,6 @@ reactive_cause_test<- top100 %>%
       group_by(YEAR_) %>% 
       summarize(acres_burn_tot = sum(GIS_ACRES))
 ```
-
-
 
 ```{r}
 top100 <- st_transform(top100, crs = 4326)
@@ -202,56 +147,62 @@ centroid_less <- centroid %>%
 
 top100 <- merge(top100, centroid_less, by = "GIS_ACRES")
 
-
 ```
 
 ```{r}
+
 # Eco region wrangling and pie-chart
 eco_intersect <- eco %>% 
   st_intersection(top100)
 
 eco_pie_df <- st_set_geometry(eco_intersect, NULL)
 
-eco_pie <- data.frame("Categorie"=rownames(eco_pie_df), eco_pie_df)
+eco_pie <- data.frame(eco_pie_df)
+  
+#eco_pie2 <- eco_pie[, c('Region', 'GIS_ACRES')]
 
-pie <- plot_ly(eco_pie, labels = ~Region, values = ~GIS_ACRES, type = 'pie') %>%
-  layout(title = 'Acres Burned',
-         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+#mapcolours <- data.frame(x = c("Cascades","Central Basin and Range","Central California Foothills and Coastal Mountains","Central California Valley", "Eastern Cascades Slopes and Foothills","Klamath Mountains/California High North Coast Range","Mojave Basin and Range","Northern Basin and Range","Sierra Nevada","Sonoran Basin and Range","Southern California Mountains", "Southern California/Northern Baja Coast"),
+ #                       colours = c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)','rgb(112,128,144)','rgb(112,128,144)'),
+  #                      stringsAsFactors = FALSE)
+
+
+#color_map <- c(Cascades ="rgb(70,130,180)", 
+ #              Central Basin and Range ="rgb(46,139,87)", 
+  #             Central California Foothills and Coastal Mountains="rgb(128,128,0)", 
+   #            Central California Valley = "rgb(0,128,128)", 
+    #           Eastern Cascades Slopes and Foothills = "rgb(222,184,135)",
+     #          Klamath Mountains/California High North Coast Range = "rgb(188,143,143)", 
+      #         Mojave Basin and Range="rgb(184,134,11)", 
+       #        Northern Basin and Range="rgb(160,82,45)", 
+        #       Sierra Nevada="rgb(105,105,105)", 
+         #      Sonoran Basin and Range = "rgb(47,79,79)", 
+          #     Southern California Mountains = "rgb(112,128,144)", 
+           #    Southern California/Northern Baja Coast = "rgb(112,128,144)")
+
+colors<-c("#ff0000","#ff1919","#ff3232","#ff4c4c","#ff6666",
+          "#ff7f7f","#ff9999","#ffb2b2","#ffcccc","#ffe5e5")
+
+#ecocolors <- c("rgb(70,130,180)", "rgb(46,139,87)", "rgb(128,128,0)", "rgb(0,128,128)", "rgb(222,184,135)","rgb(188,143,143)", "rgb(184,134,11)", "rgb(160,82,45)", "rgb(105,105,105)", "rgb(47,79,79)","rgb(112,128,144)", "rgb(112,128,144)")
+
+ecocolors <- c("#cccccc", "#cccc99", "#cccc00", "#ffcc33", "#ffcc33","#ffcc33	", "#ffcc33", "#ffcc33", "#cc99cc", "#ffcc33","#ffcc33", "#ffcc33")
+
+pie <- plot_ly(eco_pie, labels = ~Region, values = ~GIS_ACRES, type = 'pie', marker = list(colors = ecocolors)) %>% 
+               layout(title = 'Acres Burned',
+                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
 
 pie
 
 ```
 
 ```{r}
+#Experiementing with Fire Causes plot:
 
-fire100 <- top100 %>% 
-        group_by(YEAR_) %>%
-        summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
-        mutate(acres_burn_tot_1000 = acres_burn_tot/1000)
+#  ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000))+
+ #     geom_col(fill = "firebrick1", colour = "firebrick4", width = 5, position = "stack")+
+  #    theme_classic()+
+   #   scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
+    #  scale_y_continuous(expand = c(0,0), limit = c(0, 510))+
+     # labs(y = "Fire Size (Thousands of Acres)", x = "Year")
 
-ggplot(data = fire100, aes(x = YEAR_, y = acres_burn_tot_1000)) +
-      geom_col(position = position_stack()) +
-      theme_classic()+
-      scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
-      scale_y_continuous(expand = c(0,0), limit = c(0, 1000))+
-      labs(y = "Fire Size (Thousands of Acres)", x = "Year")
-  
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
->>>>>>> 365cf5ede471ab5235bad210a032cf0e9c58ab16

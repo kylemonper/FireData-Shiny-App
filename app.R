@@ -16,15 +16,10 @@ library(plotly)
 #####to do list#####
 # must do:
 # - Pie chart - customize colors CAMILA
-# - Quick stats for pie chart are incorrect - CAMILA with help from JENNY & KYLE?
-# - Fill out the 'about section' - CAMILA to draft, JENNY & KYLE to edit
 # - Bar chart - fix wrangling and make each cause different color JENNY wit KYLE help? 
-
 
 #cool to do
 # - make data table reactive - KYLE
-#set default of causeplot to "All", make it reactive with map - JENNY with KYLE help?
-
 
 ##############################################################################
 # Wrangling
@@ -86,7 +81,7 @@ eco_intersect <- eco %>%
 
 eco_pie_df <- st_set_geometry(eco_intersect, NULL)
 
-eco_pie <- data.frame("Categorie"=rownames(eco_pie_df), eco_pie_df)
+eco_pie <- data.frame(eco_pie_df)
 
 ##############################################################################
 # UI
@@ -142,41 +137,59 @@ body <- dashboardBody(
               column(width = 8,
                      box(background = "black",
                          width = 12,
-                         height = 500,
-                         leafletOutput("map", height = 500, width = 600)),
+                         height = 525,
+                         leafletOutput("map", height = 500, width = 625)),
                      box(width = 12,
+                         height = 700,
                          background = "black",
-                         title = "Acres Burned by Eco-Region",
-                         plotlyOutput("pie", height = 600, width = 600))),
+                         title = strong("Proportion of Fires by Eco-Region (Largest - Smallest)"),
+                         plotlyOutput("pie", height = 600, width = 625))),
                      
               #second column with graphs and info boxes
               column(4,
                      fluidRow(width = 4,
                               box(width = 12,
-                                  title = "Quick Stats for Map", 
+                                  title = strong("Quick Stats for Map"), 
                                   background = "black",
                                   solidHeader = TRUE,
                                   valueBoxOutput("count", width = 4),
                                   valueBoxOutput("acres", width = 8))),
                      box(width = 14,
                          background = "black",
-                         title = "Acres Burned by Cause",
+                         title = strong("Acres Burned by Cause", align = "center"),
                          plotOutput("causePlot"))
                   )))),
    #About tab
-    tabItem(tabName = "about",
-            h2("About", 
+    tabItem(tabName = "about", 
               fluidRow(
-                column(width = 4,
-                        box(width = 9,
+                column(width = 3,
+                        box(width = 12,
                             tags$img(src='justin_sullivan_getty_images.jpg', height=150, width=175),
-                            h5("A firefighter monitoring the Mendocino Complex fire on Aug. 7, 2018. Justin Sullivan/Getty Images"),
+                            h5("A firefighter monitoring the Mendocino Complex fire on Aug. 7, 2018. Source: Justin Sullivan/Getty Images"),
                             tags$img(src='thomas_fire.jpg', height=150, width=175),
-                            h5("caption and source"))),
+                            h5("The Santa Barbara Thomas Fire of 2017 - 2018. Source: CNN"))),
             column(8,
-                   fluidRow(width = 12,
-                            box(title = "Description of how to use the app.."))
-            ))))))
+                   fluidRow(width = 9,
+                            box(width = 12,
+                                h3(strong("Welcome to Playing with Fire...Data", align = "center")),
+                                tags$p("Visually explore the top 1000 fires in the last 128 years of California’s fire history. See where fires have occurred in the state over different time frames, which Ecoregions have had the biggest fires, and how total acres burned varies among different causal mechanisms."),
+                                tags$p("Use the widgets on the left hand side of the dashboard to:
+"),
+                                tags$ul(
+                                  tags$li("select a date range for the map and explore fire perimeters across the state;"),
+                                  tags$li("select a cause of fire and have a look at acres burned over time;"), 
+                                  tags$li("select the number of fires to include in the pie chart and view the proportion of fires in each Ecoregion. In this widget, 1 represents the largest fire in the state’s history and 1000 represents the smallest (of fires shown in this app)."),
+                                  tags$p("The Quick Stats box summarizes the fires displayed on the map based on date range selection.")),
+                                  tags$p(strong("Data Sources"), align = "left"),
+                                  tags$ul(
+                                    tags$li(a(href = "http://frap.fire.ca.gov/data/frapgisdata-sw-fireperimeters_download", "Fire perimeter data was sourced from the Cal Fire’s Fire and Resource Assessment Program"),
+                                    tags$li(a(href = "https://www.epa.gov/eco-research/ecoregion-download-files-state-region-9", "California Ecoregion data was sourced from the United States Environmental Protection Agency"))
+                                  
+                                  )))
+                                
+                                )
+                            )
+            ))))
 
 ui <- dashboardPage(header, sidebar, body)
 
@@ -213,13 +226,13 @@ server <- function(input, output, session) {
    #   filter(Region == input$checkRegion)
  # })
   
-  # Date slider for eco region
+  #Slider for eco region
  reactive_firecount <- reactive({
     eco_pie %>%
      arrange(GIS_ACRES) %>% 
       head(input$fire_count)
   })
-  
+
   ########################cause plot###########################
 
   reactive_cause<- reactive({
@@ -327,7 +340,9 @@ server <- function(input, output, session) {
            marker = list(colors = ecocolors)) %>%
       layout(legend = list(orientation = 'h')) %>% 
     layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+           legend = list(x = 1, y = 100))
+      
     
 })
 
