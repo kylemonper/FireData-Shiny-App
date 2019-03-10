@@ -30,7 +30,7 @@ library(plotly)
 top100 <- fire %>% 
   select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
   arrange(-GIS_ACRES) %>% 
-  head(10) %>% 
+  head(1000) %>% 
   mutate(CAUSE = case_when(
     CAUSE == 1 ~ "Lightning",
     CAUSE == 2 ~ "Equipment Use",
@@ -178,7 +178,7 @@ body <- dashboardBody(
                    fluidRow(width = 9,
                             box(width = 12,
                                 h3(strong("Welcome to Playing with Fire...Data", align = "center")),
-                                tags$p("Visually explore the top 1000 fires in the last 128 years of California’s fire history. See where fires have occurred in the state over different time frames, which Ecoregions have had the biggest fires, and how total acres burned varies among different causal mechanisms."),
+                                tags$p("Visually explore the top 1000 fires in the last 140 years of California’s fire history. See where fires have occurred in the state over different time frames, which Ecoregions have had the biggest fires, and how total acres burned varies among different causal mechanisms."),
                                 tags$p("Use the widgets on the left hand side of the dashboard to:
 "),
                                 tags$ul(
