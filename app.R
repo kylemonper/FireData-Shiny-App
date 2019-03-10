@@ -76,6 +76,8 @@ eco <- st_read("ca_eco.shp") %>%
   st_simplify(dTolerance = 100) %>% # Simplify polygons so maps don't take forever to load
   st_transform(crs = 4326)
 
+
+
 eco_intersect <- eco %>% 
   st_intersection(top100)
 
@@ -158,6 +160,7 @@ body <- dashboardBody(
                          background = "black",
                          title = strong("Acres Burned by Cause", align = "center"),
                          plotOutput("causePlot"))
+                     
                   )))),
    #About tab
     tabItem(tabName = "about", 
@@ -359,6 +362,8 @@ server <- function(input, output, session) {
       scale_y_continuous(expand = c(0,0), limit = c(0, 1000))+
       labs(y = "Fire Size (Thousands of Acres)", x = "Year")
   })
+  
+  
   
   
 }
