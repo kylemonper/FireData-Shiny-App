@@ -93,7 +93,7 @@ eco_map <- eco_center %>%
          long = unlist(map(eco_center$geometry, 2)))
 
 color_count <- 13
-my_colors <- colorRampPalette(brewer.pal(10, "Set2"))(color_count) # customize color palette if you need more.
+my_colors <- colorRampPalette(brewer.pal(10, "Dark2"))(color_count) # customize color palette if you need more.
 
 ##############################################################################
 # UI
