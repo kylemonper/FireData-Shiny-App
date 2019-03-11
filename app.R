@@ -30,7 +30,7 @@ library(plotly)
 top100 <- fire %>% 
   dplyr::select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
   arrange(-GIS_ACRES) %>% 
-  head(1000) %>% 
+  head(100) %>% 
   mutate(CAUSE = case_when(
     CAUSE == 1 ~ "Lightning",
     CAUSE == 2 ~ "Equipment Use",
@@ -107,7 +107,7 @@ sidebar <- dashboardSidebar(
   
   #side bar tabs: 
   sidebarMenu(width = 2,
-    style = "position: fixed;width:18%;",
+    style = "position: fixed;width:16%;",
     menuItem("About", tabName = "about", icon = icon("fab fa-info-circle",lib='font-awesome')),
     menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"), selected = TRUE),
     id = "tabs",
@@ -152,10 +152,9 @@ body <- dashboardBody(
               column(width = 8,
                      box(background = "black",
                          width = 12,
-                         height = 525,
-                         leafletOutput("map", height = 500, width = 625)),
+                         leafletOutput("map", height = 450, width = 625)),
                      box(width = 12,
-                         title = strong("Quick Stats for Map"), 
+                         #title = strong("Quick Stats for Map"), 
                          background = "black",
                          solidHeader = TRUE,
                          valueBoxOutput("count", width = 4),
@@ -172,15 +171,17 @@ body <- dashboardBody(
                   ))),
             
             fluidRow(
-              box(width = 6, 
+              box(width = 6,
+                  height = 600,
                   background = "black",
                   title = strong("Proportion of Fire Occurances by Ecoregion"),
-                  plotlyOutput("pie")
+                  plotlyOutput("pie", height = 550)
                   ),
               box(width = 6,
                   background = "black",
+                  height = 600,
                   title = strong("Map of California Ecoregions", align = "center"),
-                  plotOutput("ecoMap")
+                  plotOutput("ecoMap", height = 550)
                   )
             )
             ),
@@ -369,8 +370,9 @@ server <- function(input, output, session) {
            marker = list(colors = ecocolors)) %>%
       layout(legend = list(orientation = 'h')) %>% 
     layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-           legend = list(x = 1, y = 100))
+           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)
+           #legend = list(x = 1, y = 1)
+           )
       
     
 })
@@ -393,6 +395,10 @@ server <- function(input, output, session) {
       scale_y_continuous(expand = c(0,0), limit = c(0, 1000))+
       labs(y = "Acres Burned (Thousands of Acres)", x = "Year")
   })
+
+  
+  ########ECO-REGION MAP####################
+  
   
   output$ecoMap <- renderPlot({
     ggplot(eco) +
@@ -401,7 +407,7 @@ server <- function(input, output, session) {
             size = 0.1) +
       scale_fill_manual(values = my_colors) +
       theme_classic() +
-      theme(legend.position = "bottom") +
+      theme(legend.position = "bottom", legend.box = "vertical") +
       coord_sf(datum = NA) 
 #      geom_label_repel(data = eco_map, aes(x = lat, y = long, label = Region))+
  #     labs(x = "", y = "")
