@@ -23,6 +23,8 @@ library(colorspace)
 require(sp)
 require(rgdal)
 require(maps)
+library(ggrepel)
+library(DT)
 ```
 
 ```{r}
@@ -34,14 +36,42 @@ eco <- st_read("ca_eco.shp") %>%
   dplyr::select(US_L3NAME) %>% 
   rename(Region = US_L3NAME) %>% 
   st_simplify(dTolerance = 100) %>% # Simplify polygons so maps don't take forever to load
-  st_transform(crs = 4326)
+  st_transform(crs = 4326) %>% 
+  mutate(region_abbr = 
+           case_when(
+            Region  == "Cascades" ~ "CASC",
+            Region  == "Coast Range" ~ "CR",
+            Region  == "Central Basin and Range" ~ "CBR",
+            Region  == "Central California Foothills and Coastal Mountains" ~ "CCFCM",
+            Region  == "Central California Valley" ~ "CCV",
+            Region  == "Eastern Cascades Slopes and Foothills" ~ "ECSF",
+            Region  == "Klamath Mountains/California High North Coast Range" ~ "KM/NCR",
+            Region  == "Mojave Basin and Range" ~ "MBR",
+            Region  == "Northern Basin and Range" ~ "NBR",
+            Region  == "Sierra Nevada" ~ "SN",
+            Region  == "Sonoran Basin and Range" ~ "SBR",
+            Region  == "Southern California Mountains" ~ "SCM",
+            Region  == "Southern California/Northern Baja Coast" ~ "SCNBC"))
+
+#color_map <- c(Cascades ="rgb(70,130,180)", 
+ #              Central Basin and Range ="rgb(46,139,87)", 
+  #             Central California Foothills and Coastal Mountains="rgb(128,128,0)", 
+   #            Central California Valley = "rgb(0,128,128)", 
+    #           Eastern Cascades Slopes and Foothills = "rgb(222,184,135)",
+     #          Klamath Mountains/California High North Coast Range = "rgb(188,143,143)", 
+      #         Mojave Basin and Range="rgb(184,134,11)", 
+       #        Northern Basin and Range="rgb(160,82,45)", 
+        #       Sierra Nevada="rgb(105,105,105)", 
+         #      Sonoran Basin and Range = "rgb(47,79,79)", 
+          #     Southern California Mountains = "rgb(112,128,144)", 
+           #    Southern California/Northern Baja Coast = "rgb(112,128,144)")
 ```
 
 
 ```{r}
 
 top100 <- fire %>% 
-  select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
+  dplyr::select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
   arrange(-GIS_ACRES)
 
 top100$YEAR_ <- unfactor(top100$YEAR_)
@@ -83,13 +113,11 @@ top100 <- st_transform(top100, crs = 4326)
 
 centroid <- st_centroid(top100)
 
-
 centroid_less <- centroid %>% 
   mutate(lat = unlist(map(centroid$geometry,1)),
-           long = unlist(map(centroid$geometry,2))) %>% 
-  select(GIS_ACRES, lat, long) %>% 
+         long = unlist(map(centroid$geometry,2))) %>% 
+  dplyr::select(GIS_ACRES, lat, long) %>% 
   st_drop_geometry()
-
 
 top100 <- merge(top100, centroid_less, by = "GIS_ACRES")
 ```
@@ -97,7 +125,7 @@ top100 <- merge(top100, centroid_less, by = "GIS_ACRES")
 ```{r}
 
 top100 <- fire %>% 
-  select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
+  dplyr::select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
   arrange(-GIS_ACRES)
 
 top100$YEAR_ <- unfactor(top100$YEAR_)
@@ -141,7 +169,7 @@ centroid <- st_centroid(top100)
 centroid_less <- centroid %>% 
   mutate(lat = unlist(map(centroid$geometry,1)),
            long = unlist(map(centroid$geometry,2))) %>% 
-  select(GIS_ACRES, lat, long) %>% 
+  dplyr::select(GIS_ACRES, lat, long) %>% 
   st_drop_geometry()
 
 
@@ -151,15 +179,15 @@ top100 <- merge(top100, centroid_less, by = "GIS_ACRES")
 
 ```{r}
 
-# Eco region wrangling and pie-chart
+# Eco  wrangling and pie-chart
 eco_intersect <- eco %>% 
   st_intersection(top100)
 
 eco_pie_df <- st_set_geometry(eco_intersect, NULL)
 
 eco_pie <- data.frame(eco_pie_df)
-  
-#eco_pie2 <- eco_pie[, c('Region', 'GIS_ACRES')]
+
+#eco_pie2 <- eco_pie[, c('', 'GIS_ACRES')]
 
 #mapcolours <- data.frame(x = c("Cascades","Central Basin and Range","Central California Foothills and Coastal Mountains","Central California Valley", "Eastern Cascades Slopes and Foothills","Klamath Mountains/California High North Coast Range","Mojave Basin and Range","Northern Basin and Range","Sierra Nevada","Sonoran Basin and Range","Southern California Mountains", "Southern California/Northern Baja Coast"),
  #                       colours = c('rgb(70,130,180)', 'rgb(46,139,87)', 'rgb(128,128,0)', 'rgb(0,128,128)', 'rgb(222,184,135)','rgb(188,143,143)', 'rgb(184,134,11)', 'rgb(160,82,45)', 'rgb(105,105,105)', 'rgb(47,79,79)','rgb(112,128,144)','rgb(112,128,144)','rgb(112,128,144)'),
@@ -186,7 +214,7 @@ colors<-c("#ff0000","#ff1919","#ff3232","#ff4c4c","#ff6666",
 
 ecocolors <- c("#cccccc", "#cccc99", "#cccc00", "#ffcc33", "#ffcc33","#ffcc33	", "#ffcc33", "#ffcc33", "#cc99cc", "#ffcc33","#ffcc33", "#ffcc33")
 
-pie <- plot_ly(eco_pie, labels = ~Region, values = ~GIS_ACRES, type = 'pie', marker = list(colors = ecocolors)) %>% 
+pie <- plot_ly(eco_pie, labels = ~region_abbr, values = ~GIS_ACRES, type = 'pie', marker = list(colors = ecocolors)) %>% 
                layout(title = 'Acres Burned',
                       xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                       yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
@@ -217,17 +245,17 @@ eco_map <- eco_center %>%
          long = unlist(map(eco_center$geometry, 2)))
 
 color_count <- 13
-my_colors <- colorRampPalette(brewer.pal(10, "Set2"))(color_count)
+my_colors <- colorRampPalette(brewer.pal(10, "Dark2"))(color_count)
 
 ggplot(eco) +
-    geom_sf(aes(fill = Region),
+    geom_sf(aes(fill = region_abbr),
             color = "NA",
             size = 0.1,
             show.legend = FALSE) +
       scale_fill_manual(values = my_colors) +
       theme_classic() +
       coord_sf(datum = NA) +
-      geom_label_repel(data = eco_map, aes(x = lat, y = long, label = Region))+
+      geom_label_repel(data = eco_map, aes(x = lat, y = long, label = region_abbr))+
       labs(x = "", y = "")
 
 ```
