@@ -122,20 +122,24 @@ sidebar <- dashboardSidebar(
               step = 1,
               sep = "",
               width = 400),
-  #select Causes
-  selectInput(inputId = "cause",        
-              label = "Cause of Fire", 
-              choices = c("All", c(sort(unique(top100$CAUSE))))),
   
   #eco slider for number of fires selection
-  sliderInput("fire_count",               
+  tags$div(title="Select the top fires within the above date range",
+   sliderInput("fire_count",               
               label = "Select Number of Fires (Largest - Smallest)", 
               min = 1, 
               max = 1000,
               value = 1000,
               step = 1,
               sep = "",
-              width = 400),
+              width = 400)),
+  
+  #select Causes
+  selectInput(inputId = "cause",        
+              label = "Cause of Fire", 
+              choices = c("All", c(sort(unique(top100$CAUSE))))),
+  
+ 
 
 #Get Source Code tab
 menuItem("Get Code", icon = icon("fab fa-github",lib='font-awesome'), 
@@ -391,7 +395,7 @@ server <- function(input, output, session) {
     ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000)) +
       geom_col(position = position_stack(), fill = "firebrick3") +
       theme_classic()+
-      scale_x_continuous(expand = c(0,0), limit = c(low,high))+
+      scale_x_continuous(expand = c(0,0), limit = c(low,high, 1))+
       scale_y_continuous(expand = c(0,0), limit = c(0, 1000))+
       labs(y = "Acres Burned (Thousands of Acres)", x = "Year")
   })
