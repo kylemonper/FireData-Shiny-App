@@ -7,6 +7,7 @@ library(DT)
 library(shinydashboard)
 library(RColorBrewer)
 library(plotly)
+library(ggrepel)
 
 
 #library(fontawesome)
@@ -90,7 +91,22 @@ eco_center <- st_centroid(eco)
 
 eco_map <- eco_center %>% 
   mutate(lat = unlist(map(eco_center$geometry, 1)),
-         long = unlist(map(eco_center$geometry, 2)))
+         long = unlist(map(eco_center$geometry, 2))) %>% 
+  mutate(region_abbr = 
+           case_when(
+             Region  == "Cascades" ~ "CASC",
+             Region  == "Coast Range" ~ "CR",
+             Region  == "Central Basin and Range" ~ "CBR",
+             Region  == "Central California Foothills and Coastal Mountains" ~ "CCFCM",
+             Region  == "Central California Valley" ~ "CCV",
+             Region  == "Eastern Cascades Slopes and Foothills" ~ "ECSF",
+             Region  == "Klamath Mountains/California High North Coast Range" ~ "KM/NCR",
+             Region  == "Mojave Basin and Range" ~ "MBR",
+             Region  == "Northern Basin and Range" ~ "NBR",
+             Region  == "Sierra Nevada" ~ "SN",
+             Region  == "Sonoran Basin and Range" ~ "SBR",
+             Region  == "Southern California Mountains" ~ "SCM",
+             Region  == "Southern California/Northern Baja Coast" ~ "SCNBC"))
 
 color_count <- 13
 my_colors <- colorRampPalette(brewer.pal(10, "Dark2"))(color_count) # customize color palette if you need more.
@@ -152,7 +168,7 @@ body <- dashboardBody(
               column(width = 8,
                      box(background = "black",
                          width = 12,
-                         leafletOutput("map", height = 450, width = 625)),
+                         leafletOutput("map", height = 400, width = 625)),
                      box(width = 12,
                          #title = strong("Quick Stats for Map"), 
                          background = "black",
@@ -404,14 +420,16 @@ server <- function(input, output, session) {
     ggplot(eco) +
     geom_sf(aes(fill = Region),
             color = "NA",
-            size = 0.1) +
+            size = 0.1,
+            show.legend = FALSE) +
       scale_fill_manual(values = my_colors) +
       theme_classic() +
-      theme(legend.position = "bottom", legend.box = "vertical") +
-      coord_sf(datum = NA) 
-#      geom_label_repel(data = eco_map, aes(x = lat, y = long, label = Region))+
- #     labs(x = "", y = "")
-   #   geom_label_repel(data = eco, )
+      #theme(legend.position = "bottom", legend.box = "vertical") +
+      coord_sf(datum = NA) +
+    geom_label_repel(data = eco_map, aes(x = lat, y = long, label = region_abbr), label.padding = 0.25,
+                     box.padding = 0.6)+
+     labs(x = "", y = "")
+   #  geom_label_repel(data = eco, )
       
   })
   
