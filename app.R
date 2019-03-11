@@ -225,6 +225,7 @@ server <- function(input, output, session) {
   reactive_date <- reactive({
     top100 %>%
       filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
+      arrange(-GIS_ACRES) %>% 
       head(input$fire_count)
   })
   
@@ -371,6 +372,7 @@ server <- function(input, output, session) {
 })
 
 #####################################reactive bar chart######################################
+  
   
   #Make plot based on cause
   output$causePlot <- renderPlot({
