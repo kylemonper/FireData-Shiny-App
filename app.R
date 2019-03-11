@@ -257,7 +257,7 @@ server <- function(input, output, session) {
  reactive_firecount <- reactive({
     eco_pie %>%
      filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
-     arrange(GIS_ACRES) %>% 
+     arrange(-GIS_ACRES) %>% 
       head(input$fire_count)
   })
 
@@ -265,20 +265,19 @@ server <- function(input, output, session) {
 
   reactive_cause<- reactive({
     if(input$cause == 'All') 
-    {top100 %>% 
+    {reactive_date() %>% 
         filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
         group_by(YEAR_) %>%
         summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
         mutate(acres_burn_tot_1000 = acres_burn_tot/1000) 
     }
     
-    else {top100 %>%
+    else {reactive_date() %>%
         filter(CAUSE == input$cause) %>% 
         filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
         group_by(YEAR_) %>%
         summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
-        mutate(acres_burn_tot_1000 = acres_burn_tot/1000) %>% 
-        head(input$fire_count)
+        mutate(acres_burn_tot_1000 = acres_burn_tot/1000)
     }})
   
   
@@ -382,11 +381,15 @@ server <- function(input, output, session) {
   #Make plot based on cause
   output$causePlot <- renderPlot({
     
+    #change x-axis reactively
+   low <- input$date_range[1] - 1
+   high <- input$date_range[2] +1
+    
     # draw the plot with the specified cause
     ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000)) +
       geom_col(position = position_stack(), fill = "firebrick3") +
       theme_classic()+
-      scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
+      scale_x_continuous(expand = c(0,0), limit = c(low,high))+
       scale_y_continuous(expand = c(0,0), limit = c(0, 1000))+
       labs(y = "Acres Burned (Thousands of Acres)", x = "Year")
   })
