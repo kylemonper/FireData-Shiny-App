@@ -84,7 +84,7 @@ eco_intersect <- eco %>%
 eco_pie_df <- st_set_geometry(eco_intersect, NULL)
 
 eco_pie <- data.frame(eco_pie_df)
-
+ 
 #wrangling for ecoregion map
 eco_center <- st_centroid(eco)
 
@@ -107,7 +107,7 @@ sidebar <- dashboardSidebar(
   
   #side bar tabs: 
   sidebarMenu(width = 2,
-    style = "position: fixed;width:14%;",
+    style = "position: fixed;width:18%;",
     menuItem("About", tabName = "about", icon = icon("fab fa-info-circle",lib='font-awesome')),
     menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"), selected = TRUE),
     id = "tabs",
@@ -115,7 +115,7 @@ sidebar <- dashboardSidebar(
   
   #map slider for year selection
   sliderInput("date_range",               
-              label = "Select Date for Map", 
+              label = "Select Date", 
               min = min(top100$YEAR_), 
               max = max(top100$YEAR_),
               value = range(top100$YEAR_),
@@ -155,30 +155,35 @@ body <- dashboardBody(
                          height = 525,
                          leafletOutput("map", height = 500, width = 625)),
                      box(width = 12,
-                         height = 700,
+                         title = strong("Quick Stats for Map"), 
                          background = "black",
-                         title = strong("Proportion of Fires by Eco-Region (Largest - Smallest)"),
-                         plotlyOutput("pie", height = 600, width = 625))),
+                         solidHeader = TRUE,
+                         valueBoxOutput("count", width = 4),
+                         valueBoxOutput("acres", width = 8))
+                     ),
                      
               #second column with graphs and info boxes
               column(4,
                      fluidRow(width = 4,
-                              box(width = 12,
-                                  title = strong("Quick Stats for Map"), 
-                                  background = "black",
-                                  solidHeader = TRUE,
-                                  valueBoxOutput("count", width = 4),
-                                  valueBoxOutput("acres", width = 8))),
                      box(width = 14,
                          background = "black",
                          title = strong("Acres Burned by Cause", align = "center"),
-                         plotOutput("causePlot")),
-                     box(width = 14,
-                         background = "black",
-                         title = strong("Map of California Ecoregions", align = "center"),
-                         plotOutput("ecoMap"))
-
-                  )))),
+                         plotOutput("causePlot")))
+                  ))),
+            
+            fluidRow(
+              box(width = 6, 
+                  background = "black",
+                  title = strong("Proportion of Fire Occurances by Ecoregion"),
+                  plotlyOutput("pie")
+                  ),
+              box(width = 6,
+                  background = "black",
+                  title = strong("Map of California Ecoregions", align = "center"),
+                  plotOutput("ecoMap")
+                  )
+            )
+            ),
    #About tab
     tabItem(tabName = "about", 
               fluidRow(
@@ -383,7 +388,7 @@ server <- function(input, output, session) {
       theme_classic()+
       scale_x_continuous(expand = c(0,0), limit = c(1877,2018))+
       scale_y_continuous(expand = c(0,0), limit = c(0, 1000))+
-      labs(y = "Fire Size (Thousands of Acres)", x = "Year")
+      labs(y = "Acres Burned (Thousands of Acres)", x = "Year")
   })
   
   output$ecoMap <- renderPlot({
