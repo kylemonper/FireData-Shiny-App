@@ -406,8 +406,8 @@ server <- function(input, output, session) {
            marker = list(colors = ecocolors)) %>%
       layout(legend = list(orientation = 'h')) %>% 
     layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)
-           #legend = list(x = 1, y = 1)
+           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+           legend = list(x = 0.1, y = 0)
            )
       
     
