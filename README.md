@@ -11,6 +11,8 @@ Use the widgets on the left hand side of the dashboard to:
 * select the number of fires to include in the pie chart and view the proportion of fires in each Ecoregion. In this widget, 1 represents the largest fire in the state’s history and 1000 represents the smallest (of fires shown in this app). Note that a single fire can occur in multiple Ecoregions.
 
 ### Data Source
+This is a multi-agency statewide map of fire history. For CAL FIRE, timber fires 10 acres or greater, brush fires 30 acres and greater, and grass fires 300 acres or greater are included. For the USFS, there is a 10 acre minimum for fires since 1950.
+
 Data was gathered from Cal Fire's Fire and Resource Assessment Program [(FRAP)](http://frap.fire.ca.gov/data/frapgisdata-sw-fireperimeters_download) as a geodatabase file that contained over 20,000 observations with information that included fire names, causes, area burned, and perimeter geometries. This geodatabase was then exported into QGIS and converted into a shapefile for easy import into R via the SF package.
 
 ### Required Packages
