@@ -411,7 +411,7 @@ server <- function(input, output, session) {
     ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000)) +
       geom_col(position = position_stack(), fill = "firebrick3") +
       theme_classic()+
-      scale_x_continuous(expand = c(0,0), limit = c(low,high, 1))+
+      scale_x_continuous(expand = c(0,0), limit = c(low,high))+
       scale_y_continuous(expand = c(0,0), limit = c(0, 1000))+
       labs(y = "Acres Burned (Thousands of Acres)", x = "Year")
   })
