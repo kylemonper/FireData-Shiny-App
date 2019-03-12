@@ -260,3 +260,44 @@ ggplot(eco) +
 
 ```
 
+
+
+```{r}
+eco2 <- eco
+
+eco2 <- eco2 %>% 
+  mutate(Region = 
+           case_when(
+            Region  ==       "Cascades" ~ "Cascades (CASC)",
+          Region  ==    "Coast Range" ~ "Coast Range (CR)",
+         Region  ==    "Central Basin and Range" ~ "Central Basin and Range (CBR)",
+         Region  ==     "Central California Foothills and Coastal Mountains" ~ "Central California Foothills and Coastals Mountains (CCFCM)",
+        Region  ==      "Central California Valley" ~ "Central California Valley (CCV)",
+         Region  ==    "Eastern Cascades Slopes and Foothills" ~ "Easter Cascades Slopes and Foothills (ECSF)",
+        Region  ==     "Klamath Mountains/California High North Coast Range" ~ "Klamath Mountains/California North Coast Range (KM/NCR)",
+        Region  ==      "Mojave Basin and Range" ~ "Mojave Basin and Range (MBR)",
+        Region  ==      "Northern Basin and Range" ~ "Northern Basin and Range (NBR)",
+        Region  ==      "Sierra Nevada" ~ "Sierra Nevada (SN)",
+        Region  ==      "Sonoran Basin and Range" ~ "Sonoran Basin and Range (SBR)",
+         Region  ==      "Southern California Mountains" ~ "Southern California Mountains (SCM)",
+         Region  ==    "Southern California/Northern Baja Coast" ~ "Southern California/Norther Baja Coast (SCNBC)"))
+                  
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

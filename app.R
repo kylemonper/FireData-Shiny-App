@@ -31,7 +31,7 @@ library(ggrepel)
 top100 <- fire %>% 
   dplyr::select(YEAR_, FIRE_NAME,GIS_ACRES, CAUSE) %>% 
   arrange(-GIS_ACRES) %>% 
-  head(100) %>% 
+  head(1000) %>% 
   mutate(CAUSE = case_when(
     CAUSE == 1 ~ "Lightning",
     CAUSE == 2 ~ "Equipment Use",
@@ -274,9 +274,27 @@ server <- function(input, output, session) {
    #   filter(Region == input$checkRegion)
  # })
   
+  ####changing fire names for piechart legend
+  eco2 <- eco_pie %>% 
+    mutate(Region = 
+             case_when(
+               Region  ==       "Cascades" ~ "Cascades (CASC)",
+               Region  ==    "Coast Range" ~ "Coast Range (CR)",
+               Region  ==    "Central Basin and Range" ~ "Central Basin and Range (CBR)",
+               Region  ==     "Central California Foothills and Coastal Mountains" ~ "Central California Foothills and Coastals Mountains (CCFCM)",
+               Region  ==      "Central California Valley" ~ "Central California Valley (CCV)",
+               Region  ==    "Eastern Cascades Slopes and Foothills" ~ "Easter Cascades Slopes and Foothills (ECSF)",
+               Region  ==     "Klamath Mountains/California High North Coast Range" ~ "Klamath Mountains/California North Coast Range (KM/NCR)",
+               Region  ==      "Mojave Basin and Range" ~ "Mojave Basin and Range (MBR)",
+               Region  ==      "Northern Basin and Range" ~ "Northern Basin and Range (NBR)",
+               Region  ==      "Sierra Nevada" ~ "Sierra Nevada (SN)",
+               Region  ==      "Sonoran Basin and Range" ~ "Sonoran Basin and Range (SBR)",
+               Region  ==      "Southern California Mountains" ~ "Southern California Mountains (SCM)",
+               Region  ==    "Southern California/Northern Baja Coast" ~ "Southern California/Norther Baja Coast (SCNBC)"))
+  
   #Slider for eco region
  reactive_firecount <- reactive({
-    eco_pie %>%
+    eco2 %>%
      filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
      arrange(-GIS_ACRES) %>% 
       head(input$fire_count)
@@ -286,16 +304,14 @@ server <- function(input, output, session) {
 
   reactive_cause<- reactive({
     if(input$cause == 'All') 
-    {reactive_date() %>% 
-        filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
+    {top100 %>% 
         group_by(YEAR_) %>%
         summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
         mutate(acres_burn_tot_1000 = acres_burn_tot/1000) 
     }
     
-    else {reactive_date() %>%
+    else {top100 %>%
         filter(CAUSE == input$cause) %>% 
-        filter(YEAR_ >= input$date_range[1] & YEAR_ <= input$date_range[2]) %>% 
         group_by(YEAR_) %>%
         summarize(acres_burn_tot = sum(GIS_ACRES)) %>% 
         mutate(acres_burn_tot_1000 = acres_burn_tot/1000)
@@ -403,15 +419,13 @@ server <- function(input, output, session) {
   #Make plot based on cause
   output$causePlot <- renderPlot({
     
-    #change x-axis reactively
-   low <- input$date_range[1] - 1
-   high <- input$date_range[2] +1
+
     
     # draw the plot with the specified cause
     ggplot(data = reactive_cause(), aes(x = YEAR_, y = acres_burn_tot_1000)) +
       geom_col(position = position_stack(), fill = "firebrick3") +
       theme_classic()+
-      scale_x_continuous(expand = c(0,0), limit = c(low,high))+
+      scale_x_continuous(expand = c(0,0), limit = c(1877, 2018))+
       scale_y_continuous(expand = c(0,0), limit = c(0, 1000))+
       labs(y = "Acres Burned (Thousands of Acres)", x = "Year")
   })
